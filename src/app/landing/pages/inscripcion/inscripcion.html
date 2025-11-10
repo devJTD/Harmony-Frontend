@@ -1,0 +1,186 @@
+<div class="container my-5">
+    <h1 class="text-center mb-3">Inscripción y Pago</h1>
+    <p class="text-center text-muted mb-4">Completa el formulario y finaliza tu pago para asegurar tu vacante.</p>
+
+    <form #inscripcionForm="ngForm" (ngSubmit)="submitInscripcion(inscripcionForm)" novalidate>
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+                <div class="card p-4 shadow-sm mb-4" style="background-color: #f8f1e9;">
+
+                    <h3 class="mb-4 text-primary"><i class="bi bi-person-fill me-2"></i>1. Datos Personales</h3>
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre Completo</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" [(ngModel)]="inscripcionData.nombre"
+                            placeholder="Ej: Juan Pérez" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Correo Electrónico</label>
+                        <input type="email" class="form-control" id="email" name="email" [(ngModel)]="inscripcionData.email"
+                            placeholder="ejemplo@correo.com" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="telefono" class="form-label">Teléfono</label>
+                        <input type="tel" class="form-control" id="telefono" name="telefono" [(ngModel)]="inscripcionData.telefono"
+                            placeholder="Ej: +51 921 340 064" required>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <h3 class="mb-4 text-primary"><i class="bi bi-calendar-event-fill me-2"></i>2. Selección de
+                        Talleres y Horarios</h3>
+                    
+                    <div class="mb-4 p-3 border rounded" style="background-color: #ffffff;">
+                        <p class="fw-bold mb-3 text-muted">Marca los talleres a los que deseas inscribirte:</p>
+
+                        <div *ngFor="let taller of talleres"
+                            class="form-check mb-2 d-flex justify-content-between align-items-center">
+                            <div>
+                                <input class="form-check-input taller-checkbox" type="checkbox"
+                                    [value]="taller.id" [id]="'checkTaller' + taller.id"
+                                    [disabled]="taller.horarios.length === 0"
+                                    (change)="toggleTaller(taller.id, $event)"
+                                    [checked]="taller.seleccionado"> 
+                                    
+                                <label class="form-check-label fw-medium" [for]="'checkTaller' + taller.id">
+                                    <span>{{ taller.nombre }}</span>
+                                    <span *ngIf="taller.horarios.length === 0"
+                                        class="text-danger small ms-2">(No hay horarios disponibles)</span> 
+                                </label>
+                            </div>
+
+                            <span class="badge bg-primary fs-6">
+                                S/ {{ taller.precio | number : '1.2-2' }} 
+                            </span>
+                        </div>
+                    </div>
+
+                    <div id="scheduleContainer" class="mt-4">
+                        <div *ngFor="let taller of talleres" [id]="'scheduleTaller' + taller.id"
+                            class="schedule-section card p-3 mb-3" 
+                            [ngClass]="{'d-none': !taller.seleccionado}">
+
+                            <h5 class="card-title text-primary"><i class="bi bi-clock-fill me-2"></i>Horario para
+                                <span>{{ taller.nombre }}</span>
+                            </h5>
+                            <p class="card-subtitle mb-2 text-muted small">Elige tu horario semanal:</p>
+
+                            <div *ngIf="taller.horarios.length === 0">
+                                <div class="alert alert-warning" role="alert">
+                                    ⚠️ Actualmente no hay horarios disponibles para este taller.
+                                </div>
+                            </div>
+                            
+                            <div *ngIf="taller.horarios.length > 0">
+                                <select class="form-select horario-select" [id]="'selectHorario' + taller.id"
+                                    name="horarioTaller{{ taller.id }}" 
+                                    [(ngModel)]="taller.horarioSeleccionadoId"
+                                    (change)="updateSummary()" required 
+                                    [disabled]="!taller.seleccionado">
+                                    
+                                    <option [ngValue]="null" disabled>Selecciona un horario</option>
+                                    
+                                    <option *ngFor="let horario of taller.horarios" [ngValue]="horario.id">
+                                        {{ horario.diasDeClase }} de {{ horario.horaInicio }} a {{ horario.horaFin }} 
+                                        (Prof. {{ horario.profesor.nombreCompleto }} - Vacantes: {{ horario.vacantesDisponibles }})
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="validationAlert" class="alert alert-danger mt-4" role="alert" 
+                        [ngClass]="{'d-none': !showTallerValidationError}">
+                        ⚠️ Debes seleccionar al menos un taller con su horario disponible para continuar.
+                    </div>
+
+                    <hr class="my-4">
+
+                    <h3 class="mb-4 text-primary"><i class="bi bi-credit-card-fill me-2"></i>3. Método de Pago</h3>
+
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="numeroTarjeta" class="form-label">Número de Tarjeta</label>
+                            <input type="text" class="form-control" id="numeroTarjeta" name="numeroTarjeta"
+                                placeholder="XXXX XXXX XXXX XXXX" required maxlength="16"
+                                [(ngModel)]="inscripcionData.pago.numeroTarjeta">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="fechaVencimiento" class="form-label">Fecha de Vencimiento</label>
+                            <input type="text" class="form-control" id="fechaVencimiento" name="fechaVencimiento"
+                                placeholder="MM/AA" required maxlength="5"
+                                [(ngModel)]="inscripcionData.pago.fechaVencimiento">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="cvv" class="form-label">CVV / CVC</label>
+                            <input type="text" class="form-control" id="cvv" name="cvv" placeholder="XXX" required
+                                maxlength="3" [(ngModel)]="inscripcionData.pago.cvv">
+                            <small class="form-text text-muted">3 o 4 dígitos en el reverso.</small>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card p-4 shadow-sm h-100" style="background-color: #e6e0d9;">
+                    <h4 class="mb-4 fw-bold text-center">Resumen de Inscripción y Pago</h4>
+
+                    <div class="table-responsive mb-4">
+                        <table class="table table-sm align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th scope="col">Taller</th>
+                                    <th scope="col">Horario Seleccionado</th>
+                                    <th scope="col" class="text-end">Precio</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resumenBody">
+                                <ng-container *ngIf="talleresSeleccionadosValidos.length > 0">
+                                    <tr *ngFor="let item of talleresSeleccionadosValidos"
+                                        [ngClass]="{'table-warning': !item.horarioSeleccionadoId}">
+                                        <td>{{ item.nombre }}</td>
+                                        <td>
+                                            <span *ngIf="item.horarioSeleccionado; else noHorario" class="text-muted small">
+                                                {{ item.horarioSeleccionado.diasDeClase }} 
+                                                ({{ item.horarioSeleccionado.horaInicio }} a {{ item.horarioSeleccionado.horaFin }})
+                                                </span>
+                                            <ng-template #noHorario>
+                                                <span class="text-danger small">No seleccionado</span>
+                                            </ng-template>
+                                        </td>
+                                        <td class="text-end fw-medium">S/ {{ item.precio | number : '1.2-2' }}</td>
+                                    </tr>
+                                </ng-container>
+                                
+                                <tr *ngIf="talleresSeleccionadosValidos.length === 0">
+                                    <td colspan="3" class="text-center text-muted">Aún no has seleccionado ningún taller.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Subtotal:</span>
+                            <span class="fw-bold">S/ {{ subtotal | number : '1.2-2' }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between bg-light fw-bold">
+                            <span>Total a Pagar:</span>
+                            <span class="text-success fs-5">S/ {{ totalPagar | number : '1.2-2' }}</span>
+                        </li>
+                    </ul>
+                    
+                    <p class="text-success small"><i class="bi bi-shield-lock-fill me-2"></i>Pago 100% seguro con
+                        cifrado SSL.</p>
+
+                    <div class="d-grid mt-3">
+                        <button type="submit" class="btn-formulario btn-lg" 
+                            [disabled]="!inscripcionForm.valid || totalPagar <= 0">
+                            Pagar S/ {{ totalPagar | number : '1.2-2' }} y Confirmar Inscripción
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
