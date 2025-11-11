@@ -10,7 +10,6 @@ export interface CredencialesTransferencia {
 @Injectable({
   providedIn: 'root'
 })
-
 export class DataTransferService {
 
   // BehaviorSubject almacena el último valor y lo emite a los suscriptores

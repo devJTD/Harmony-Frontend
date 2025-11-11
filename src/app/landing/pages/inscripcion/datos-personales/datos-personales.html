@@ -1,0 +1,54 @@
+<form #datosForm="ngForm" (ngSubmit)="submitDatos(datosForm)" novalidate>
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card p-4 shadow-sm mb-4" style="background-color: #f8f1e9;">
+
+                <h3 class="mb-4 text-primary"><i class="bi bi-person-fill me-2"></i>1. Datos Personales</h3>
+
+                <div *ngIf="successMessage" class="alert alert-success d-flex align-items-center mb-4" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <div>
+                        <strong>¡Éxito!</strong> {{ successMessage }}
+                    </div>
+                </div>
+
+                <div *ngIf="errorMessage" class="alert alert-danger d-flex align-items-center mb-4" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <div>
+                        <strong>Error:</strong> {{ errorMessage }}
+
+                        <div *ngIf="errorMessage.includes('cuenta activa') || errorMessage.includes('inicia sesión')">
+                            <small>Por favor, usa la opción de **Iniciar Sesión** para acceder a tu cuenta.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="nombre" class="form-label">Nombre Completo</label>
+                    <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Ej: Juan Pérez"
+                        required [(ngModel)]="datos.nombre">
+                </div>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label">Correo Electrónico</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="ejemplo@correo.com"
+                        required email [(ngModel)]="datos.email" (change)="clearError()">
+                </div>
+
+                <div class="mb-4">
+                    <label for="telefono" class="form-label">Teléfono</label>
+                    <input type="tel" class="form-control" id="telefono" name="telefono"
+                        placeholder="Ej: +51 921 340 064" required [(ngModel)]="datos.telefono">
+                </div>
+
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn-formulario btn-lg"
+                        [disabled]="datosForm.invalid || isLoading || errorMessage">
+                        {{ isLoading ? 'Guardando...' : 'Continuar a Selección de Talleres' }}
+                        <i class="bi bi-arrow-right-circle-fill ms-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
