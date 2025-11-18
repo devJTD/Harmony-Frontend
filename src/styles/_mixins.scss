@@ -1,0 +1,167 @@
+// ========================================
+// MIXINS REUTILIZABLES DE HARMONY
+// ========================================
+
+// --- RESPONSIVE BREAKPOINTS ---
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == 'xs' {
+    @media (max-width: 575.98px) { @content; }
+  }
+  @else if $breakpoint == 'sm' {
+    @media (min-width: 576px) { @content; }
+  }
+  @else if $breakpoint == 'md' {
+    @media (min-width: 768px) { @content; }
+  }
+  @else if $breakpoint == 'lg' {
+    @media (min-width: 992px) { @content; }
+  }
+  @else if $breakpoint == 'xl' {
+    @media (min-width: 1200px) { @content; }
+  }
+  @else if $breakpoint == 'xxl' {
+    @media (min-width: 1400px) { @content; }
+  }
+}
+
+// --- FLEXBOX CENTER ---
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-center-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+// --- CARD STYLES ---
+@mixin card-base {
+  background: $bg-white;
+  border-radius: $border-radius;
+  padding: $spacing-lg;
+  box-shadow: $box-shadow;
+}
+
+@mixin card-form {
+  @include card-base;
+  background-color: $bg-form-card;
+}
+
+// --- BUTTON STYLES ---
+@mixin btn-base {
+  padding: $spacing-sm $spacing-lg;
+  border-radius: $border-radius-sm;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: $transition-base;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+@mixin btn-primary {
+  @include btn-base;
+  background-color: $color-primary;
+  color: $text-white;
+
+  &:hover:not(:disabled) {
+    background-color: darken($color-primary, 10%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+}
+
+@mixin btn-brillo {
+  @include btn-base;
+  background-color: #f7d002;
+  color: #333;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  &:hover:not(:disabled) {
+    background-color: #f7dc57;
+    box-shadow: 0 0 10px 5px rgba(214, 214, 74, 0.7);
+    transform: translateY(-2px);
+  }
+}
+
+// --- INPUT VALIDATION ---
+@mixin input-invalid {
+  border-color: $color-danger;
+  padding-right: calc(1.5em + 0.75rem);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right calc(0.375em + 0.1875rem) center;
+  background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+
+  &:focus {
+    border-color: $color-danger;
+    box-shadow: 0 0 0 0.2rem rgba($color-danger, 0.25);
+  }
+}
+
+@mixin input-valid {
+  border-color: $color-success;
+  padding-right: calc(1.5em + 0.75rem);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right calc(0.375em + 0.1875rem) center;
+  background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+
+  &:focus {
+    border-color: $color-success;
+    box-shadow: 0 0 0 0.2rem rgba($color-success, 0.25);
+  }
+}
+
+// --- LOADING SPINNER ---
+@mixin loading-spinner($size: 1rem, $color: $color-primary) {
+  border: 2px solid rgba($color, 0.2);
+  border-top-color: $color;
+  border-radius: 50%;
+  width: $size;
+  height: $size;
+  animation: spinner 0.6s linear infinite;
+}
+
+@keyframes spinner {
+  to { transform: rotate(360deg); }
+}
+
+// --- TEXT TRUNCATE ---
+@mixin text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// --- SCROLLBAR CUSTOM ---
+@mixin custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: $bg-light;
+    border-radius: $border-radius-sm;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $text-muted;
+    border-radius: $border-radius-sm;
+
+    &:hover {
+      background: darken($text-muted, 10%);
+    }
+  }
+}
