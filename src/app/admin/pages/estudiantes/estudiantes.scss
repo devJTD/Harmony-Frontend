@@ -7,14 +7,16 @@
 
     /* Sidebar */
     --sidebar-ancho: 250px;
-    --sidebar-fondo: #343a40; /* Negro oscuro */
+    --sidebar-fondo: #343a40;
+    /* Negro oscuro */
     --sidebar-texto: rgba(255, 255, 255, 0.8);
     --sidebar-hover-fondo: #495057;
     --sidebar-hover-texto: white;
     --sidebar-borde: 1px solid #495057;
 
     /* Logout Link */
-    --logout-color: #dc3545; /* Rojo de Bootstrap */
+    --logout-color: #dc3545;
+    /* Rojo de Bootstrap */
 
     /* Contenido Principal */
     --contenido-fondo: white;
@@ -38,7 +40,8 @@ body {
     top: 0;
     left: 0;
     padding-top: 20px;
-    background-color:  #343a40;;
+    background-color: #343a40;
+    ;
     color: white;
     z-index: 1000;
 }
@@ -59,7 +62,8 @@ body {
     transition: background-color 0.2s, color 0.2s;
 }
 
-.nav-link-item:hover, .nav-link-item.active {
+.nav-link-item:hover,
+.nav-link-item.active {
     background-color: #495057;
     color: white;
 }
@@ -76,7 +80,8 @@ body {
 
 /* Contenido Principal */
 .main-content {
-    margin-left: 250px; /* Desplaza el contenido principal */
+    margin-left: 250px;
+    /* Desplaza el contenido principal */
     padding: 20px;
 }
 
@@ -111,7 +116,8 @@ body {
 }
 
 .btn-confirmar-password {
-    background-color: #007bff; /* Usamos el azul primario de Bootstrap para la acción */
+    background-color: #007bff;
+    /* Usamos el azul primario de Bootstrap para la acción */
     border-color: #007bff;
     font-weight: bold;
     padding: 10px 20px;
@@ -129,9 +135,11 @@ body {
 
 /* Define un color que resalte, como el morado oscuro que usas en el botón de login */
 .text-harmony-title {
-    color: #5e3ea1 !important; /* Morado/Púrpura más oscuro para contraste */
+    color: #5e3ea1 !important;
+    /* Morado/Púrpura más oscuro para contraste */
     font-weight: 700;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    /* Sombra sutil */
 }
 
 /* Opcional: si el sidebar usa el morado, puedes usar un color vibrante para el título principal */
@@ -142,7 +150,8 @@ body {
 
 .main-content h2.text-harmony-title {
     font-size: 1.8rem;
-    border-bottom: 2px solid #724fd2; /* Línea de color debajo del subtítulo */
+    border-bottom: 2px solid #724fd2;
+    /* Línea de color debajo del subtítulo */
     padding-bottom: 5px;
 }
 
@@ -150,7 +159,8 @@ body {
 /* Estilos específicos para el Panel de Clientes de Administración (extraídos del HTML) */
 
 #registro-cliente {
-    background-color: #f8f1e9; /* Un color suave para destacar la sección de registro */
+    background-color: #f8f1e9;
+    /* Un color suave para destacar la sección de registro */
 }
 
 .text-harmony-title {

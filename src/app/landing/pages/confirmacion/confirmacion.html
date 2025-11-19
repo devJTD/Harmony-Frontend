@@ -13,25 +13,24 @@
 
                 <div class="mb-4">
                     <p class="mb-1 fw-semibold">Correo Electrónico (Usuario):</p>
-                    <span class="credencial-valor fs-5">
-                        {{ correo || 'ejemplo@correo.com' }} 
-                    </span>
+                    <span class="credencial-valor fs-5">{{ correo || 'No disponible' }}</span>
                 </div>
 
                 <div class="mb-4">
                     <p class="mb-1 fw-semibold">Contraseña Temporal Generada:</p>
-                    <span class="credencial-valor fs-5 text-danger">
-                        {{ contrasena || 'Hrmony-1234' }}
-                    </span>
+                    <span class="credencial-valor fs-5 text-danger">{{ contrasena || 'No disponible' }}</span>
                 </div>
 
                 <div class="alert alert-warning mt-3" role="alert">
                     <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                    **IMPORTANTE:** Guarda esta contraseña temporal en un lugar seguro. ¡La necesitarás para
+                    <strong>IMPORTANTE:</strong> Guarda esta contraseña temporal en un lugar seguro. ¡La necesitarás para
                     ingresar por primera vez! Te recomendamos cambiarla inmediatamente después de iniciar sesión.
                 </div>
             </div>
 
+            <a [routerLink]="['/auth/login']" class="btn-formulario btn-lg" style="max-width: 300px; width: 100%;">
+                <i class="bi bi-box-arrow-in-right me-2"></i> Iniciar Sesión Ahora
+            </a>
         </div>
     </div>
 </div>

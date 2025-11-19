@@ -20,7 +20,6 @@ import { Estudiantes } from './pages/estudiantes/estudiantes';
     CommonModule,
     Profesores,
     Estudiantes,
-    // 2. Añadir FormsModule al array de imports
     FormsModule,
     AdminRoutingModule
   ]

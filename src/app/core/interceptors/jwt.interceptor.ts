@@ -23,21 +23,28 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
     '/api/inscripcion/talleresDisponibles',
     '/api/inscripcion/cliente',
     '/api/inscripcion/confirmar',
-    '/contacto/enviar'
+    '/contacto/enviar',
+    '/api/blog'
   ];
 
-  // Verificar si la URL actual es pública
   const isPublicUrl = publicUrls.some(url => req.url.includes(url));
 
-  // Si hay token y no es una URL pública, agregar el header Authorization
   if (token && !isPublicUrl) {
     console.log('[JWT INTERCEPTOR] Agregando token a la petición:', req.url);
     
-    req = req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}`
+    let headers = req.headers.set('Authorization', `Bearer ${token}`);
+    
+    // 🔧 CORRECCIÓN: Solo agregar Content-Type si NO es FormData
+    // Spring rechaza charset en application/json, así que no lo especificamos
+    if (req.body && !(req.body instanceof FormData)) {
+      // ✅ NO especificar charset - dejar que Spring maneje el por defecto
+      if (!req.headers.has('Content-Type')) {
+        headers = headers.set('Content-Type', 'application/json');
       }
-    });
+    }
+    // ✅ Para FormData, NO establecer Content-Type - el navegador lo hace automáticamente
+    
+    req = req.clone({ headers });
   }
 
   // Continuar con la petición y manejar errores

@@ -1,1 +1,53 @@
-<p>horario works!</p>
+<div class="main-content">
+    <h1 class="mb-4 text-harmony-title">Bienvenido, {{ userName }}</h1>
+
+    <section id="horario" class="calendar-container">
+        <h2 class="h3 mb-4 text-harmony-title">Tus Horarios de Taller</h2>
+        <p class="lead text-muted">Aquí puedes ver los horarios de tus clases de los talleres en los que estás inscrito.
+        </p>
+
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-3 text-muted">Cargando tus horarios...</p>
+        </div>
+
+        <!-- Error State -->
+        <div *ngIf="errorMessage && !isLoading" class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {{ errorMessage }}
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!isLoading && !errorMessage && horarios.length === 0" class="alert alert-warning" role="alert">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            Aún no tienes horarios asignados para esta semana.
+        </div>
+
+        <!-- Horarios Table -->
+        <div *ngIf="!isLoading && !errorMessage && horarios.length > 0" class="table-responsive">
+            <table class="table table-bordered table-striped text-center align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">Taller</th>
+                        <th scope="col">Día(s)</th>
+                        <th scope="col">Hora Inicio</th>
+                        <th scope="col">Hora Fin</th>
+                        <th scope="col">Profesor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let horario of horarios">
+                        <td>{{ horario.taller.nombre }}</td>
+                        <td>{{ horario.diasDeClase }}</td>
+                        <td>{{ formatHora(horario.horaInicio) }}</td>
+                        <td>{{ formatHora(horario.horaFin) }}</td>
+                        <td>{{ horario.profesor.nombreCompleto }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>

@@ -1,1 +1,61 @@
-<p>contrasena works!</p>
+<div class="main-content">
+    <h1 class="mb-4">Configuración de Seguridad</h1>
+
+    <section id="cambio-contrasena" class="password-container">
+        <h2 class="h3 mb-4 text-warning">¡Advertencia de Seguridad!</h2>
+
+        <!-- Success Message -->
+        <div *ngIf="successMessage" class="alert alert-success" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <span>{{ successMessage }}</span>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-octagon-fill me-2"></i>
+            <span>{{ errorMessage }}</span>
+        </div>
+
+        <div class="alert alert-warning" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            Recomendamos <strong>encarecidamente</strong> que cambies tu contraseña temporal o inicial inmediatamente
+            para
+            proteger tu cuenta.
+        </div>
+
+        <h3 class="h4 mb-3">Establecer Nueva Contraseña</h3>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <form #passwordForm="ngForm" (ngSubmit)="cambiarContrasena(passwordForm)" class="mt-4">
+                    <div class="mb-3">
+                        <label for="nuevaContrasena" class="form-label fw-bold">Nueva Contraseña</label>
+                        <input type="password" class="form-control" id="nuevaContrasena" name="nuevaContrasena"
+                            [(ngModel)]="nuevaContrasena" required minlength="6" placeholder="Mínimo 6 caracteres"
+                            [disabled]="isLoading">
+                        <small class="form-text text-muted">Mínimo 6 caracteres, se recomienda incluir mayúsculas y
+                            números</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="confirmarContrasena" class="form-label fw-bold">Confirmar Nueva Contraseña</label>
+                        <input type="password" class="form-control" id="confirmarContrasena" name="confirmarContrasena"
+                            [(ngModel)]="confirmarContrasena" required minlength="6"
+                            placeholder="Vuelve a escribir la nueva contraseña" [disabled]="isLoading">
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg btn-confirmar-password"
+                            [disabled]="passwordForm.invalid || isLoading">
+                            <span *ngIf="!isLoading">Confirmar Cambio</span>
+                            <span *ngIf="isLoading">
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                Cambiando...
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+</div>

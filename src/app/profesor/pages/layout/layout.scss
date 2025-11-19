@@ -1,0 +1,66 @@
+/* Estilos de la página */
+body {
+    background-color: #f8f9fa;
+}
+
+/* Sidebar (Barra Lateral) */
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding-top: 20px;
+    background-color: #343a40;
+    color: white;
+    z-index: 1000;
+}
+
+/* Logo y Título en el Sidebar */
+.header-logo-dashboard {
+    padding: 0 20px 20px 20px;
+    border-bottom: 1px solid #495057;
+    margin-bottom: 15px;
+}
+
+/* Información del usuario */
+.user-info {
+    color: #fff;
+    padding: 10px 20px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+}
+
+/* Enlaces de Navegación del Sidebar */
+.nav-link-item {
+    color: rgba(255, 255, 255, 0.8);
+    padding: 15px 20px;
+    text-decoration: none;
+    display: block;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.nav-link-item:hover,
+.nav-link-item.active {
+    background-color: #495057;
+    color: white;
+}
+
+/* Estilo para el botón de Salir (Logout) */
+.nav-link-logout {
+    color: #dc3545;
+}
+
+.nav-link-logout:hover {
+    background-color: #495057;
+    color: #dc3545;
+}
+
+/* Contenido Principal */
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
+    min-height: 100vh;
+}

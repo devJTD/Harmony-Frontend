@@ -1,9 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
-// Importa la INTERFAZ y la CLASE/SERVICE. Si la clase se llama Taller, 
-// usa un alias como TallerApiService para la clase, lo cual ya estás haciendo.
 import { TallerSimple as Taller, TallerService as TallerApiService } from '../../../services/taller-service';
+
 @Component({
   selector: 'app-inicio',
   standalone: true,
@@ -18,8 +17,10 @@ export class Inicio implements OnInit {
 
   constructor(private tallerService: TallerApiService) { }
 
-  // 🚀 Función auxiliar para crear la ruta de la imagen, accesible desde el HTML
-  getStaticImageUrl(relativePath: string): string { // ⬅️ AÑADIDO
+  /**
+   * ✅ CORREGIDO: El servicio ya maneja URLs externas correctamente
+   */
+  getStaticImageUrl(relativePath: string): string {
     return this.tallerService.getStaticImageUrl(relativePath);
   }
 
@@ -27,10 +28,13 @@ export class Inicio implements OnInit {
     this.tallerService.getTalleresActivos().subscribe({
       next: (data) => {
         this.talleres = data;
-        console.log("Talleres cargados en Angular:", this.talleres.length);
+        console.log("✅ Talleres cargados en Angular (Inicio):", this.talleres.length);
+        this.talleres.forEach(t => {
+          console.log(`📸 Taller ${t.nombre}: ${t.imagenInicio}`);
+        });
       },
       error: (err) => {
-        console.error("Error al cargar los talleres:", err);
+        console.error("❌ Error al cargar los talleres:", err);
       }
     });
   }

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { DatosPagoForm, InscripcionPayload, InscripcionService } from '../../../../services/inscripcion-service';
+import { DataTransferService } from '../../../../services/data-transfer-service';
 
 @Component({
   selector: 'app-metodo-pago',
@@ -13,6 +14,7 @@ import { DatosPagoForm, InscripcionPayload, InscripcionService } from '../../../
 })
 export class MetodoPago implements OnInit {
   private inscripcionService = inject(InscripcionService);
+  private dataTransferService = inject(DataTransferService); // ✅ INYECTADO
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
@@ -67,18 +69,14 @@ export class MetodoPago implements OnInit {
       horarioId: t.horarioSeleccionadoId!
     }));
 
-    // *** USANDO ASIGNACIÓN EXPLÍCITA EN LUGAR DE SPREAD para DEBUG ***
     const payload: InscripcionPayload = {
       clienteId: cliente.id,
       nombre: cliente.nombreCompleto,
-      email: cliente.correo, // ✅ El valor del email del signal
+      email: cliente.correo,
       telefono: cliente.telefono,
-
-      // ✅ Campos de pago explícitos para asegurar el mapeo
       numeroTarjeta: form.value.numeroTarjeta,
       fechaVencimiento: form.value.fechaVencimiento,
       cvv: form.value.cvv,
-
       inscripciones: talleresSeleccionados,
     };
 
@@ -87,14 +85,21 @@ export class MetodoPago implements OnInit {
 
     this.inscripcionService.confirmarInscripcion(payload).subscribe({
       next: (response) => {
-        console.log('[LOG METODO-PAGO] Inscripción exitosa. Redirigiendo.');
-        this.inscripcionService.clearState();
-        this.router.navigate(['/confirmacion'], {
-          queryParams: {
-            id: response.confirmacionId,
-            email: response.correo
-          }
+        console.log('[LOG METODO-PAGO] Inscripción exitosa. Response:', response);
+        
+        // ✅ GUARDAR CREDENCIALES EN EL SERVICIO DE TRANSFERENCIA
+        this.dataTransferService.setCredenciales({
+          correo: response.correo,
+          contrasenaTemporal: response.contrasenaTemporal
         });
+        
+        console.log('[LOG METODO-PAGO] Credenciales guardadas en DataTransferService');
+        
+        // Limpiar estado de inscripción
+        this.inscripcionService.clearState();
+        
+        // Navegar a confirmación
+        this.router.navigate(['/confirmacion']);
       },
       error: (err) => {
         console.error('[LOG METODO-PAGO] Error al procesar el pago:', err);

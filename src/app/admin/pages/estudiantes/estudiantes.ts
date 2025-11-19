@@ -1,16 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
-import { FormsModule, NgForm, RequiredValidator } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { FormsModule, NgForm } from '@angular/forms';
 import { AdminService, ClienteDTO, TallerDTO } from '../../../services/admin-service';
 
-// Definición de interfaces para los modelos de datos
 interface Horario {
   id: number;
   diasDeClase: string;
-  horaInicio: string; // Usaremos string para la hora ('HH:mm')
-  horaFin: string; // Usaremos string para la hora ('HH:mm')
-  profesor: { nombreCompleto: string };
+  horaInicio: string;
+  horaFin: string;
+  profesor?: { nombreCompleto: string }; // ✅ CORREGIDO: Hacer opcional
   vacantesDisponibles: number;
 }
 
@@ -18,8 +16,18 @@ interface Taller {
   id: number;
   nombre: string;
   horarios: Horario[];
-  seleccionado: boolean; // Campo de control para el checkbox
-  horarioSeleccionado?: number; // ID del horario elegido
+  seleccionado: boolean;
+  horarioSeleccionado?: number;
+}
+
+// ✅ CORREGIDO: Estructura para inscripciones con null-safety
+interface Inscripcion {
+  horario?: {
+    taller?: { nombre: string };
+    diasDeClase?: string;
+    horaInicio?: string;
+    horaFin?: string;
+  };
 }
 
 interface Cliente {
@@ -27,202 +35,243 @@ interface Cliente {
   nombreCompleto: string;
   correo: string;
   telefono: string;
-  inscripciones: { horario: { taller: { nombre: string }, diasDeClase: string, horaInicio: string, horaFin: string } }[];
-  // Propiedades anidadas simplificadas para el ejemplo
-  user: { email: string };
+  inscripciones: Inscripcion[];
+  user?: { email: string }; // ✅ CORREGIDO: Hacer opcional
 }
 
 @Component({
   selector: 'app-estudiantes',
   templateUrl: './estudiantes.html',
   styleUrls: ['./estudiantes.scss'],
-  imports: [
-    FormsModule,
-    CommonModule,
-
-
-  ]
+  imports: [FormsModule, CommonModule]
 })
 export class Estudiantes implements OnInit {
-
-  // Variables de datos (reemplazan a los modelos de Thymeleaf)
   talleres: Taller[] = [];
   clientes: Cliente[] = [];
   nombreUsuario: string = '';
-  nuevoCliente: any = {}; // Modelo para el formulario de registro
-  clienteAEditar: Cliente | any = {}; // Modelo para el modal de edición
+  nuevoCliente: any = {};
+  clienteAEditar: Cliente | any = {};
   originalCorreo: string = '';
   validationAlert: boolean = false;
+  
+  successMessage: string = '';
+  errorMessage: string = '';
 
-  // Referencia al formulario de edición para resetear o interactuar
   @ViewChild('editClienteFormRef') editClienteFormRef!: NgForm;
-
-  // Referencia al modal de edición
   @ViewChild('editModal') editModal!: ElementRef;
 
   constructor(private adminService: AdminService) { }
 
   ngOnInit(): void {
-    // Cargar datos de fallback (mocks) de inmediato para que la UI funcione
-    this.loadInitialData();
-
-    // Intentar obtener datos reales desde el backend y sobrescribir los mocks si están disponibles
-    this.adminService.getTalleres().subscribe(
-      (talleresApi: TallerDTO[]) => {
-        if (talleresApi && talleresApi.length > 0) {
-          this.talleres = talleresApi.map(t => ({
-            id: t.id,
-            nombre: t.nombre,
-            seleccionado: false,
-            horarios: (t as any).horarios || []
-          }));
-        }
-      }, err => {
-        console.warn('No se pudo obtener talleres desde backend:', err);
-      }
-    );
-
-    this.adminService.getClientes().subscribe(
-      (clientesApi: ClienteDTO[]) => {
-        if (clientesApi && clientesApi.length > 0) {
-          this.clientes = clientesApi.map(c => ({
-            id: c.id,
-            nombreCompleto: c.nombreCompleto,
-            correo: c.correo,
-            telefono: c.telefono,
-            user: { email: c.correo },
-            inscripciones: []
-          } as Cliente));
-        }
-      }, err => {
-        console.warn('No se pudo obtener clientes desde backend:', err);
-      }
-    );
+    console.log('🔵 [ESTUDIANTES ANGULAR] Inicializando componente Estudiantes');
+    this.cargarTalleresDisponibles();
+    this.cargarClientes();
   }
 
-  // Función para simular la carga de datos
-  loadInitialData() {
-    // Talleres
-    this.talleres = [
-  {
-    id: 1,
-    nombre: 'Taller de Guitarra',
-    seleccionado: false, // <-- ¡AGREGAR ESTO!
-    horarios: [
-        { id: 101, diasDeClase: 'Lunes y Miércoles', horaInicio: '18:00', horaFin: '19:30', profesor: { nombreCompleto: 'Prof. Ana' }, vacantesDisponibles: 5 },
-        { id: 102, diasDeClase: 'Martes y Jueves', horaInicio: '10:00', horaFin: '11:30', profesor: { nombreCompleto: 'Prof. Juan' }, vacantesDisponibles: 2 },
-    ]
-  },
-  {
-    id: 2,
-    nombre: 'Taller de Canto',
-    seleccionado: false, // <-- ¡AGREGAR ESTO!
-    horarios: [
-        { id: 201, diasDeClase: 'Viernes', horaInicio: '16:00', horaFin: '18:00', profesor: { nombreCompleto: 'Prof. Sofía' }, vacantesDisponibles: 8 },
-    ]
-  },
-  {
-    id: 3,
-    nombre: 'Taller de Batería',
-    seleccionado: false, // <-- ¡AGREGAR ESTO!
-    horarios: [] // Taller sin horarios disponibles
-  },
-];
-
-    this.clientes = [
-  {
-    id: 1,
-    nombreCompleto: 'Pedro González',
-    correo: 'pedro@ejemplo.com', // <-- ¡AGREGAR ESTO!
-    user: { email: 'pedro@ejemplo.com' },
-    telefono: '987654321',
-    inscripciones: [
-      { horario: { taller: { nombre: 'Taller de Guitarra' }, diasDeClase: 'L/M', horaInicio: '18:00', horaFin: '19:30' } }
-    ]
-  },
-  {
-    id: 2,
-    nombreCompleto: 'María Lopez',
-    correo: 'maria@ejemplo.com', // <-- ¡AGREGAR ESTO!
-    user: { email: 'maria@ejemplo.com' },
-    telefono: '998877665',
-    inscripciones: []
-  },
-];
-
-    // Inicializar el modelo del formulario
-    this.nuevoCliente = { nombreCompleto: '', correo: '', telefono: '' };
+  cargarTalleresDisponibles() {
+    console.log('🔵 [ESTUDIANTES ANGULAR] Cargando talleres disponibles...');
+    this.adminService.getTalleresDisponibles().subscribe({
+      next: (talleresApi: any[]) => {
+        console.log('✅ [ESTUDIANTES ANGULAR] Talleres disponibles recibidos:', talleresApi.length);
+        
+        // ✅ CORREGIDO: Validar que horarios y profesor existan
+        this.talleres = talleresApi.map(t => ({
+          id: t.id,
+          nombre: t.nombre,
+          seleccionado: false,
+          horarios: (t.horarios || []).map((h: any) => ({
+            id: h.id,
+            diasDeClase: h.diasDeClase || '',
+            horaInicio: h.horaInicio || '',
+            horaFin: h.horaFin || '',
+            profesor: h.profesor ? { nombreCompleto: h.profesor.nombreCompleto } : undefined,
+            vacantesDisponibles: h.vacantesDisponibles || 0
+          }))
+        }));
+        
+        console.log('📊 [ESTUDIANTES ANGULAR] Talleres procesados:', this.talleres);
+        this.talleres.forEach(t => {
+          console.log(`  - ${t.nombre}: ${t.horarios.length} horarios`);
+          t.horarios.forEach(h => {
+            console.log(`    * ${h.diasDeClase} ${h.horaInicio}-${h.horaFin} (Prof: ${h.profesor?.nombreCompleto || 'Sin asignar'})`);
+          });
+        });
+      },
+      error: (err) => {
+        console.error('❌ [ESTUDIANTES ANGULAR] Error al cargar talleres:', err);
+        this.errorMessage = 'Error al cargar talleres disponibles';
+      }
+    });
   }
 
-  // Lógica del Formulario de Registro (Reemplaza la validación JS)
+  // ✅ CORREGIDO: Mejorar manejo de inscripciones
+  cargarClientes() {
+    console.log('🔵 [ESTUDIANTES ANGULAR] Cargando clientes con inscripciones...');
+    this.adminService.getClientesConInscripciones().subscribe({
+      next: (clientesApi: any[]) => {
+        console.log('✅ [ESTUDIANTES ANGULAR] Clientes recibidos:', clientesApi.length);
+        
+        this.clientes = clientesApi.map(c => ({
+          id: c.id,
+          nombreCompleto: c.nombreCompleto,
+          correo: c.correo,
+          telefono: c.telefono,
+          user: c.user ? { email: c.user.email } : undefined,
+          inscripciones: (c.inscripciones || []).map((ins: any) => ({
+            horario: ins.horario ? {
+              taller: ins.horario.taller ? { nombre: ins.horario.taller.nombre } : undefined,
+              diasDeClase: ins.horario.diasDeClase || '',
+              horaInicio: ins.horario.horaInicio || '',
+              horaFin: ins.horario.horaFin || ''
+            } : undefined
+          }))
+        } as Cliente));
+        
+        console.log('📊 [ESTUDIANTES ANGULAR] Clientes procesados:', this.clientes);
+        console.log('📋 [ESTUDIANTES ANGULAR] Inscripciones del primer cliente:', 
+          this.clientes.length > 0 ? this.clientes[0].inscripciones : 'Sin clientes');
+      },
+      error: (err) => {
+        console.error('❌ [ESTUDIANTES ANGULAR] Error al cargar clientes:', err);
+        this.errorMessage = 'Error al cargar la lista de clientes';
+      }
+    });
+  }
+
   registrarCliente(form: NgForm) {
+    console.log('🔵 [ESTUDIANTES ANGULAR] Iniciando registro de cliente');
     this.validationAlert = false;
+    this.errorMessage = '';
+    this.successMessage = '';
+    
     let validSelection = true;
+    const talleresSeleccionados: { [key: number]: number } = {};
 
     this.talleres.forEach(taller => {
-      // Si el taller está seleccionado y tiene horarios, debe tener uno elegido
       if (taller.seleccionado && taller.horarios.length > 0 && !taller.horarioSeleccionado) {
         validSelection = false;
+        console.warn('⚠️ [ESTUDIANTES ANGULAR] Taller sin horario:', taller.nombre);
+      }
+      
+      if (taller.seleccionado && taller.horarioSeleccionado) {
+        talleresSeleccionados[taller.id] = taller.horarioSeleccionado;
+        console.log('✔️ [ESTUDIANTES ANGULAR] Taller seleccionado:', taller.id, '-> Horario:', taller.horarioSeleccionado);
       }
     });
 
     if (!validSelection) {
       this.validationAlert = true;
-      console.error('Debes seleccionar un horario para cada taller elegido.');
+      console.error('❌ [ESTUDIANTES ANGULAR] Validación fallida: falta seleccionar horarios');
       return;
     }
 
     if (form.valid) {
-      // Lógica de envío al backend con los datos de this.nuevoCliente y los talleres seleccionados
-      console.log('Cliente a registrar:', this.nuevoCliente);
-      const inscripciones = this.talleres
-          .filter(t => t.seleccionado && t.horarioSeleccionado)
-          .map(t => ({ tallerId: t.id, horarioId: t.horarioSeleccionado }));
-      console.log('Inscripciones a registrar:', inscripciones);
+      const payload = {
+        nombreCompleto: this.nuevoCliente.nombreCompleto,
+        correo: this.nuevoCliente.correo,
+        telefono: this.nuevoCliente.telefono,
+        talleresSeleccionados: talleresSeleccionados
+      };
+      
+      console.log('📤 [ESTUDIANTES ANGULAR] Enviando payload:', payload);
 
-      // Aquí se llamaría a un servicio: this.clienteService.registrar(data)...
-
-      // Resetear formulario y data
-      form.resetForm();
-      this.talleres.forEach(t => { t.seleccionado = false; t.horarioSeleccionado = undefined; });
-      this.validationAlert = false;
+      this.adminService.createCliente(payload).subscribe({
+        next: (response: any) => {
+          console.log('✅ [ESTUDIANTES ANGULAR SUCCESS] Cliente registrado:', response);
+          this.successMessage = `Cliente registrado exitosamente. Correo: ${response.email}, Contraseña temporal: ${response.temporalPassword}`;
+          
+          form.resetForm();
+          this.talleres.forEach(t => { 
+            t.seleccionado = false; 
+            t.horarioSeleccionado = undefined; 
+          });
+          this.cargarClientes();
+          
+          setTimeout(() => {
+            this.successMessage = '';
+          }, 8000);
+        },
+        error: (err) => {
+          console.error('❌ [ESTUDIANTES ANGULAR ERROR] Error al registrar cliente:', err);
+          this.errorMessage = err.error?.message || 'Error al registrar el cliente';
+        }
+      });
+    } else {
+      console.warn('⚠️ [ESTUDIANTES ANGULAR] Formulario inválido');
     }
   }
 
-  // Lógica para el Modal de Edición (Reemplaza show.bs.modal)
   openEditModal(cliente: Cliente) {
-    // Copia superficial de los datos para evitar modificar el cliente original antes de guardar
+    console.log('🔵 [ESTUDIANTES ANGULAR] Abriendo modal de edición para cliente:', cliente.id);
     this.clienteAEditar = {
       id: cliente.id,
       nombre: cliente.nombreCompleto,
-      correo: cliente.user.email,
+      correo: cliente.user?.email || cliente.correo,
       telefono: cliente.telefono
     };
-    this.originalCorreo = cliente.user.email;
-
-    // En Angular, se usa el modal programáticamente si usas un framework como Bootstrap/NGX
-    // Si usas el JS de Bootstrap, solo necesitas el ID del modal (editModal).
+    this.originalCorreo = cliente.user?.email || cliente.correo;
+    console.log('📝 [ESTUDIANTES ANGULAR] Datos a editar:', this.clienteAEditar);
   }
 
-  // Lógica para el envío del formulario de edición
   editarCliente(form: NgForm) {
+    console.log('🔵 [ESTUDIANTES ANGULAR] Iniciando edición de cliente ID:', this.clienteAEditar.id);
+    
     if (form.valid) {
-      // Lógica de envío al backend (incluye this.clienteAEditar y this.originalCorreo)
-      console.log('Cliente a editar:', this.clienteAEditar);
-      console.log('Correo original (para validación):', this.originalCorreo);
+      const payload = {
+        nombreCompleto: this.clienteAEditar.nombre,
+        correo: this.clienteAEditar.correo,
+        telefono: this.clienteAEditar.telefono
+      };
+      
+      console.log('📤 [ESTUDIANTES ANGULAR] Enviando payload de edición:', payload);
 
-      // Aquí se llamaría a un servicio: this.clienteService.editar(data)...
-
-      // Cierra el modal (debes usar la API del modal de Bootstrap si lo incluyes en el index.html)
-      // Ejemplo: this.editModal.nativeElement.modal('hide');
+      this.adminService.updateCliente(this.clienteAEditar.id, payload).subscribe({
+        next: (response: any) => {
+          console.log('✅ [ESTUDIANTES ANGULAR SUCCESS] Cliente actualizado:', response);
+          this.successMessage = 'Cliente actualizado exitosamente';
+          this.cargarClientes();
+          
+          const modalElement = document.getElementById('estudiantes-editModal');
+          if (modalElement) {
+            const modal = (window as any).bootstrap.Modal.getInstance(modalElement);
+            if (modal) modal.hide();
+          }
+          
+          setTimeout(() => {
+            this.successMessage = '';
+          }, 5000);
+        },
+        error: (err) => {
+          console.error('❌ [ESTUDIANTES ANGULAR ERROR] Error al editar cliente:', err);
+          this.errorMessage = err.error?.message || 'Error al actualizar el cliente';
+        }
+      });
     }
   }
 
-  // Lógica para la Baja Segura (Reemplaza la función confirmBajaSegura)
   confirmBajaSegura(cliente: Cliente) {
+    console.log('🔵 [ESTUDIANTES ANGULAR] Confirmando baja de cliente:', cliente.id);
+    
     if (confirm(`¿Estás seguro de que deseas eliminar completamente al cliente ${cliente.nombreCompleto} (ID: ${cliente.id})? Esta acción es irreversible.`)) {
-      console.log('Eliminando cliente con ID:', cliente.id);
-      // Aquí se llamaría a un servicio: this.clienteService.eliminar(cliente.id)...
+      console.log('📤 [ESTUDIANTES ANGULAR] Eliminando cliente ID:', cliente.id);
+      
+      this.adminService.deleteCliente(cliente.id).subscribe({
+        next: (response: any) => {
+          console.log('✅ [ESTUDIANTES ANGULAR SUCCESS] Cliente eliminado:', response);
+          this.successMessage = 'Cliente eliminado exitosamente';
+          this.cargarClientes();
+          
+          setTimeout(() => {
+            this.successMessage = '';
+          }, 5000);
+        },
+        error: (err) => {
+          console.error('❌ [ESTUDIANTES ANGULAR ERROR] Error al eliminar cliente:', err);
+          this.errorMessage = err.error?.message || 'Error al eliminar el cliente';
+        }
+      });
+    } else {
+      console.log('⚠️ [ESTUDIANTES ANGULAR] Eliminación cancelada por el usuario');
     }
   }
 }

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AdminService, TallerDTO, ProfesorDTO } from '../../../services/admin-service';
+import { HttpParams } from '@angular/common/http';
 
 interface Profesor {
   id: number;
@@ -32,6 +33,11 @@ interface Taller {
   horarios: Horario[];
 }
 
+interface ImageInfo {
+  filename: string;
+  url: string;
+}
+
 @Component({
   selector: 'app-talleres',
   imports: [FormsModule, CommonModule],
@@ -39,25 +45,24 @@ interface Taller {
   styleUrl: './talleres.scss',
 })
 export class Talleres implements OnInit {
-  // Propiedades para gestión de datos
   talleres: Taller[] = [];
   talleresActivos: Taller[] = [];
   profesores: Profesor[] = [];
-  nombreUsuario = 'Admin';
 
-  // Form: Registrar nuevo taller
+  // ✅ Lista de imágenes disponibles en el servidor
+  imagenesDisponibles: ImageInfo[] = [];
+
   nuevoTaller = {
     nombre: '',
     descripcion: '',
     duracionSemanas: 0,
     clasesPorSemana: 0,
     precio: 0,
-    imagenTaller: '',
-    imagenInicio: '',
+    imagenTaller: '',  // ✅ Solo ruta string
+    imagenInicio: '',  // ✅ Solo ruta string
     temas: '',
   };
 
-  // Form: Registrar nuevo horario
   nuevoHorario = {
     tallerId: '',
     profesorId: '',
@@ -68,45 +73,55 @@ export class Talleres implements OnInit {
     vacantesDisponibles: 0,
   };
 
-  // Form: Editar taller
   tallerAEditar: Taller | null = null;
   tallerParaEditarId = '';
   editFormTallerVisible = false;
 
-  // Form: Editar horario
   tallerParaHorarioEditar = '';
   horarioAEditar: Horario | null = null;
   horarioAEditarId = '';
   horariosDelTaller: Horario[] = [];
   editFormHorarioVisible = false;
 
-  // Alertas
   successMessage = '';
   errorMessage = '';
 
-  // Días de la semana
-  diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+  // ✅ Control de carga de nueva imagen
+  uploadingNewImage = false;
 
-  // Fecha de hoy
+  diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
   today = new Date().toISOString().split('T')[0];
 
   constructor(private adminService: AdminService) { }
 
   ngOnInit() {
-    // Load mock data immediately so UI works without backend
-    this.loadInitialData();
+    console.log('🔵 [TALLERES ANGULAR] Inicializando componente Talleres');
+    this.cargarProfesores();
+    this.cargarTalleres();
+    this.cargarImagenesDisponibles();
+  }
 
-    // Try to fetch real data from backend and overwrite mocks if successful
-    this.adminService.getProfesores().subscribe((profesoresApi: ProfesorDTO[]) => {
-      if (profesoresApi && profesoresApi.length) {
-        this.profesores = profesoresApi.map(p => ({ id: p.id, nombreCompleto: p.nombreCompleto }));
+  cargarProfesores() {
+    console.log('🔵 [TALLERES ANGULAR] Cargando profesores...');
+    this.adminService.getProfesores().subscribe({
+      next: (profesoresApi: any[]) => {
+        this.profesores = profesoresApi.map(p => ({
+          id: p.id,
+          nombreCompleto: p.nombreCompleto
+        }));
+        console.log('✅ [TALLERES ANGULAR] Profesores cargados:', this.profesores.length);
+      },
+      error: (err) => {
+        console.error('❌ [TALLERES ANGULAR] Error al cargar profesores:', err);
+        this.errorMessage = 'Error al cargar profesores';
       }
-    }, err => {
-      console.warn('No se pudo obtener profesores desde backend:', err);
     });
+  }
 
-    this.adminService.getTalleres().subscribe((talleresApi: TallerDTO[]) => {
-      if (talleresApi && talleresApi.length) {
+  cargarTalleres() {
+    console.log('🔵 [TALLERES ANGULAR] Cargando talleres...');
+    this.adminService.getTalleres().subscribe({
+      next: (talleresApi: TallerDTO[]) => {
         this.talleres = talleresApi.map(t => ({
           id: t.id,
           nombre: t.nombre,
@@ -119,86 +134,181 @@ export class Talleres implements OnInit {
           temas: (t as any).temas || '',
           activo: (t as any).activo !== false,
           horarios: (t as any).horarios || []
-        } as any));
+        } as Taller));
+
         this.talleresActivos = this.talleres.filter(t => t.activo);
+        console.log('✅ [TALLERES ANGULAR] Talleres cargados:', this.talleres.length);
+        console.log('✅ [TALLERES ANGULAR] Talleres activos:', this.talleresActivos.length);
+      },
+      error: (err) => {
+        console.error('❌ [TALLERES ANGULAR] Error al cargar talleres:', err);
+        this.errorMessage = 'Error al cargar talleres';
       }
-    }, err => {
-      console.warn('No se pudo obtener talleres desde backend:', err);
     });
   }
 
-  loadInitialData() {
-    // Mock data - reemplazar con llamadas a servicios
-    this.profesores = [
-      { id: 1, nombreCompleto: 'Juan García' },
-      { id: 2, nombreCompleto: 'María López' },
-      { id: 3, nombreCompleto: 'Carlos Martínez' },
-    ];
-
-    this.talleres = [
-      {
-        id: 1,
-        nombre: 'Taller de Guitarra',
-        descripcion: 'Aprende guitarra clásica desde cero',
-        duracionSemanas: 12,
-        clasesPorSemana: 2,
-        precio: 150,
-        imagenTaller: 'https://via.placeholder.com/400x300?text=Guitarra',
-        imagenInicio: 'https://via.placeholder.com/800x400?text=Guitarra',
-        temas: 'Posición de las manos\nPrimeros acordes\nTécnica básica',
-        activo: true,
-        horarios: [
-          {
-            id: 1,
-            diasDeClase: 'Lunes, Miércoles',
-            horaInicio: '18:00',
-            horaFin: '19:30',
-            vacantesDisponibles: 5,
-            fechaInicio: '2025-11-15',
-            profesor: this.profesores[0],
-          },
-        ],
+  /**
+   * ✅ NUEVO: Carga la lista de imágenes disponibles desde el backend
+   */
+  cargarImagenesDisponibles() {
+    console.log('🔵 [TALLERES ANGULAR] Cargando lista de imágenes disponibles...');
+    this.adminService.getImagesList().subscribe({
+      next: (response: any) => {
+        if (response.success && response.images) {
+          this.imagenesDisponibles = response.images;
+          console.log('✅ [TALLERES ANGULAR] Imágenes disponibles:', this.imagenesDisponibles.length);
+        }
       },
-      {
-        id: 2,
-        nombre: 'Taller de Canto',
-        descripcion: 'Técnica vocal y canto lírico',
-        duracionSemanas: 10,
-        clasesPorSemana: 2,
-        precio: 120,
-        imagenTaller: 'https://via.placeholder.com/400x300?text=Canto',
-        imagenInicio: 'https://via.placeholder.com/800x400?text=Canto',
-        temas: 'Calentamiento vocal\nProyección de voz',
-        activo: true,
-        horarios: [],
-      },
-    ];
+      error: (err) => {
+        console.error('❌ [TALLERES ANGULAR] Error al cargar lista de imágenes:', err);
+      }
+    });
+  }
 
-    this.talleresActivos = this.talleres.filter((t) => t.activo);
+  /**
+   * ✅ NUEVO: Dispara el selector de archivo para subir una nueva imagen
+   */
+  triggerFileUpload() {
+    const fileInput = document.getElementById('uploadImageFile') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
+    }
+  }
+
+  /**
+   * ✅ NUEVO: Maneja la subida de una nueva imagen
+   */
+  onUploadNewImage(event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    console.log('🔵 [TALLERES ANGULAR] Subiendo nueva imagen:', file.name);
+
+    // Validar tamaño
+    if (file.size > 5 * 1024 * 1024) {
+      this.errorMessage = 'La imagen no debe superar los 5MB';
+      return;
+    }
+
+    // Validar tipo
+    if (!file.type.startsWith('image/')) {
+      this.errorMessage = 'Solo se permiten archivos de imagen';
+      return;
+    }
+
+    this.uploadingNewImage = true;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    this.adminService.uploadImage(formData).subscribe({
+      next: (response: any) => {
+        console.log('✅ [TALLERES ANGULAR] Imagen subida exitosamente:', response);
+        this.successMessage = `Imagen "${response.filename}" subida exitosamente`;
+
+        // ✅ Recargar lista de imágenes
+        this.cargarImagenesDisponibles();
+
+        this.uploadingNewImage = false;
+
+        // Limpiar el input
+        const fileInput = document.getElementById('uploadImageFile') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
+
+        setTimeout(() => { this.successMessage = ''; }, 3000);
+      },
+      error: (err) => {
+        console.error('❌ [TALLERES ANGULAR] Error al subir imagen:', err);
+        this.errorMessage = err.error?.message || 'Error al subir la imagen';
+        this.uploadingNewImage = false;
+      }
+    });
   }
 
   // ===== REGISTRAR NUEVO TALLER =====
   registrarTaller() {
-    if (
-      !this.nuevoTaller.nombre ||
-      !this.nuevoTaller.descripcion ||
-      this.nuevoTaller.precio <= 0
-    ) {
-      this.errorMessage = 'Por favor completa todos los campos requeridos';
+    console.log('🔵 [TALLERES ANGULAR] Registrando nuevo taller:', this.nuevoTaller.nombre);
+
+    // ✅ VALIDACIONES ESTRICTAS
+    if (!this.nuevoTaller.nombre || this.nuevoTaller.nombre.trim() === '') {
+      this.errorMessage = 'El nombre del taller es obligatorio';
+      console.warn('⚠️ [TALLERES ANGULAR] Nombre vacío');
       return;
     }
 
-    const taller: Taller = {
-      id: Math.max(...this.talleres.map((t) => t.id), 0) + 1,
-      ...this.nuevoTaller,
-      activo: true,
-      horarios: [],
+    if (!this.nuevoTaller.descripcion || this.nuevoTaller.descripcion.trim() === '') {
+      this.errorMessage = 'La descripción del taller es obligatoria';
+      console.warn('⚠️ [TALLERES ANGULAR] Descripción vacía');
+      return;
+    }
+
+    if (!this.nuevoTaller.imagenTaller || !this.nuevoTaller.imagenInicio) {
+      this.errorMessage = 'Debes seleccionar ambas imágenes';
+      console.warn('⚠️ [TALLERES ANGULAR] Imágenes no seleccionadas');
+      return;
+    }
+
+    // ✅ VALIDAR NÚMEROS - Aquí estaba el problema
+    const duracionSemanas = Number(this.nuevoTaller.duracionSemanas);
+    const clasesPorSemana = Number(this.nuevoTaller.clasesPorSemana);
+    const precio = Number(this.nuevoTaller.precio);
+
+    // Verificar que no sean NaN
+    if (isNaN(duracionSemanas) || duracionSemanas <= 0) {
+      this.errorMessage = 'La duración debe ser un número mayor a 0';
+      console.warn('⚠️ [TALLERES ANGULAR] Duración inválida:', duracionSemanas);
+      return;
+    }
+
+    if (isNaN(clasesPorSemana) || clasesPorSemana <= 0) {
+      this.errorMessage = 'Las clases por semana deben ser un número mayor a 0';
+      console.warn('⚠️ [TALLERES ANGULAR] Clases por semana inválida:', clasesPorSemana);
+      return;
+    }
+
+    if (isNaN(precio) || precio < 0) {
+      this.errorMessage = 'El precio debe ser un número válido mayor o igual a 0';
+      console.warn('⚠️ [TALLERES ANGULAR] Precio inválido:', precio);
+      return;
+    }
+
+    // ✅ Construir payload con tipos correctos
+    const payload = {
+      nombre: this.nuevoTaller.nombre.trim(),
+      descripcion: this.nuevoTaller.descripcion.trim(),
+      duracionSemanas: duracionSemanas,
+      clasesPorSemana: clasesPorSemana,
+      precio: precio,
+      imagenTaller: this.nuevoTaller.imagenTaller,
+      imagenInicio: this.nuevoTaller.imagenInicio,
+      temas: this.nuevoTaller.temas || '',
+      activo: true
     };
 
-    this.talleres.push(taller);
-    this.talleresActivos = this.talleres.filter((t) => t.activo);
-    this.successMessage = `Taller "${taller.nombre}" registrado exitosamente`;
-    this.resetNuevoTaller();
+    console.log('📤 [TALLERES ANGULAR] Enviando payload:', payload);
+    console.log('🔍 [TALLERES ANGULAR] Tipos de datos:');
+    console.log('   - nombre:', typeof payload.nombre, '|', payload.nombre);
+    console.log('   - duracionSemanas:', typeof payload.duracionSemanas, '|', payload.duracionSemanas);
+    console.log('   - clasesPorSemana:', typeof payload.clasesPorSemana, '|', payload.clasesPorSemana);
+    console.log('   - precio:', typeof payload.precio, '|', payload.precio);
+    console.log('   - activo:', typeof payload.activo, '|', payload.activo);
+
+    this.adminService.createTaller(payload).subscribe({
+      next: (response: any) => {
+        console.log('✅ [TALLERES ANGULAR SUCCESS] Taller registrado:', response);
+        this.successMessage = `Taller "${this.nuevoTaller.nombre}" registrado exitosamente`;
+        this.resetNuevoTaller();
+        this.cargarTalleres();
+
+        setTimeout(() => { this.successMessage = ''; }, 5000);
+      },
+      error: (err) => {
+        console.error('❌ [TALLERES ANGULAR ERROR] Error al registrar taller:', err);
+        console.error('❌ [TALLERES ANGULAR ERROR] Status:', err.status);
+        console.error('❌ [TALLERES ANGULAR ERROR] Detalles:', err.error);
+        this.errorMessage = err.error?.message || 'Error al registrar el taller';
+      }
+    });
   }
 
   resetNuevoTaller() {
@@ -216,35 +326,42 @@ export class Talleres implements OnInit {
 
   // ===== REGISTRAR NUEVO HORARIO =====
   registrarHorario() {
-    if (
-      !this.nuevoHorario.tallerId ||
-      !this.nuevoHorario.profesorId ||
-      this.nuevoHorario.diasDeClase.length === 0 ||
-      !this.nuevoHorario.horaInicio ||
-      !this.nuevoHorario.horaFin
-    ) {
+    console.log('🔵 [TALLERES ANGULAR] Registrando nuevo horario para taller:', this.nuevoHorario.tallerId);
+
+    if (!this.nuevoHorario.tallerId || !this.nuevoHorario.profesorId ||
+      this.nuevoHorario.diasDeClase.length === 0 || !this.nuevoHorario.horaInicio ||
+      !this.nuevoHorario.horaFin) {
       this.errorMessage = 'Por favor completa todos los campos del horario';
+      console.warn('⚠️ [TALLERES ANGULAR] Datos de horario incompletos');
       return;
     }
 
-    const taller = this.talleres.find((t) => t.id == Number(this.nuevoHorario.tallerId));
-    if (!taller) return;
+    const params = new HttpParams()
+      .set('tallerId', this.nuevoHorario.tallerId)
+      .set('profesorId', this.nuevoHorario.profesorId)
+      .set('diasDeClase', this.nuevoHorario.diasDeClase.join(', '))
+      .set('horaInicio', this.nuevoHorario.horaInicio)
+      .set('horaFin', this.nuevoHorario.horaFin)
+      .set('fechaInicio', this.nuevoHorario.fechaInicio)
+      .set('vacantesDisponibles', this.nuevoHorario.vacantesDisponibles.toString());
 
-    const profesor = this.profesores.find((p) => p.id == Number(this.nuevoHorario.profesorId));
+    console.log('📤 [TALLERES ANGULAR] Enviando params:', params.toString());
 
-    const horario: Horario = {
-      id: Math.max(...this.talleres.flatMap((t) => t.horarios.map((h) => h.id)), 0) + 1,
-      diasDeClase: this.nuevoHorario.diasDeClase.join(', '),
-      horaInicio: this.nuevoHorario.horaInicio,
-      horaFin: this.nuevoHorario.horaFin,
-      vacantesDisponibles: this.nuevoHorario.vacantesDisponibles,
-      fechaInicio: this.nuevoHorario.fechaInicio,
-      profesor,
-    };
+    this.adminService.createHorario(params).subscribe({
+      next: (response: any) => {
+        console.log('✅ [TALLERES ANGULAR SUCCESS] Horario registrado:', response);
+        this.successMessage = 'Horario añadido exitosamente';
+        this.resetNuevoHorario();
+        this.cargarTalleres();
 
-    taller.horarios.push(horario);
-    this.successMessage = `Horario añadido al taller "${taller.nombre}"`;
-    this.resetNuevoHorario();
+        setTimeout(() => { this.successMessage = ''; }, 5000);
+      },
+      error: (err) => {
+        console.error('❌ [TALLERES ANGULAR ERROR] Error al registrar horario:', err);
+        console.error('❌ [TALLERES ANGULAR ERROR] Detalles:', err.error);
+        this.errorMessage = err.error?.message || 'Error al registrar el horario';
+      }
+    });
   }
 
   resetNuevoHorario() {
@@ -261,10 +378,11 @@ export class Talleres implements OnInit {
 
   toggleDia(dia: string) {
     if (this.nuevoHorario.diasDeClase.includes(dia)) {
-      this.nuevoHorario.diasDeClase = this.nuevoHorario.diasDeClase.filter((d) => d !== dia);
+      this.nuevoHorario.diasDeClase = this.nuevoHorario.diasDeClase.filter(d => d !== dia);
     } else {
       this.nuevoHorario.diasDeClase.push(dia);
     }
+    console.log('🔄 [TALLERES ANGULAR] Días seleccionados:', this.nuevoHorario.diasDeClase);
   }
 
   isDiaSelected(dia: string): boolean {
@@ -273,34 +391,77 @@ export class Talleres implements OnInit {
 
   // ===== EDITAR TALLER =====
   onTallerAEditarChange(tallerId: string) {
+    console.log('🔵 [TALLERES ANGULAR] Seleccionando taller para editar:', tallerId);
+
     if (!tallerId) {
       this.editFormTallerVisible = false;
       this.tallerAEditar = null;
       return;
     }
 
-    const taller = this.talleresActivos.find((t) => t.id == Number(tallerId));
+    const taller = this.talleresActivos.find(t => t.id == Number(tallerId));
     if (taller) {
       this.tallerAEditar = { ...taller };
       this.editFormTallerVisible = true;
+      console.log('📝 [TALLERES ANGULAR] Taller cargado para edición:', this.tallerAEditar.nombre);
     }
   }
 
   guardarCambiosTaller() {
+    console.log('🔵 [TALLERES ANGULAR] Guardando cambios del taller:', this.tallerAEditar?.id);
+
     if (!this.tallerAEditar) return;
 
-    const index = this.talleres.findIndex((t) => t.id === this.tallerAEditar!.id);
-    if (index !== -1) {
-      this.talleres[index] = { ...this.tallerAEditar };
-      this.talleresActivos = this.talleres.filter((t) => t.activo);
-      this.successMessage = `Taller "${this.tallerAEditar.nombre}" actualizado`;
-      this.tallerAEditar = null;
-      this.editFormTallerVisible = false;
+    // ✅ VALIDACIONES
+    if (!this.tallerAEditar.nombre || this.tallerAEditar.nombre.trim() === '') {
+      this.errorMessage = 'El nombre del taller es obligatorio';
+      return;
     }
+
+    if (!this.tallerAEditar.descripcion || this.tallerAEditar.descripcion.trim() === '') {
+      this.errorMessage = 'La descripción es obligatoria';
+      return;
+    }
+
+    // ✅ Construir payload con todos los campos
+    const payload = {
+      id: this.tallerAEditar.id,
+      nombre: this.tallerAEditar.nombre.trim(),
+      descripcion: this.tallerAEditar.descripcion.trim(),
+      duracionSemanas: Number(this.tallerAEditar.duracionSemanas),
+      clasesPorSemana: Number(this.tallerAEditar.clasesPorSemana),
+      precio: Number(this.tallerAEditar.precio),
+      imagenTaller: this.tallerAEditar.imagenTaller,
+      imagenInicio: this.tallerAEditar.imagenInicio,
+      temas: this.tallerAEditar.temas || '',
+      activo: this.tallerAEditar.activo  // ✅ Mantener el estado actual
+    };
+
+    console.log('📤 [TALLERES ANGULAR] Enviando payload de actualización:', payload);
+
+    this.adminService.updateTaller(this.tallerAEditar.id, payload).subscribe({
+      next: (response: any) => {
+        console.log('✅ [TALLERES ANGULAR SUCCESS] Taller actualizado:', response);
+        this.successMessage = `Taller "${this.tallerAEditar!.nombre}" actualizado`;
+        this.tallerAEditar = null;
+        this.editFormTallerVisible = false;
+        this.cargarTalleres();
+
+        setTimeout(() => { this.successMessage = ''; }, 5000);
+      },
+      error: (err) => {
+        console.error('❌ [TALLERES ANGULAR ERROR] Error al actualizar taller:', err);
+        console.error('❌ [TALLERES ANGULAR ERROR] Status:', err.status);
+        console.error('❌ [TALLERES ANGULAR ERROR] Detalles:', err.error);
+        this.errorMessage = err.error?.message || 'Error al actualizar el taller';
+      }
+    });
   }
 
   // ===== EDITAR HORARIO =====
   onTallerParaHorarioChange(tallerId: string) {
+    console.log('🔵 [TALLERES ANGULAR] Cargando horarios del taller:', tallerId);
+
     if (!tallerId) {
       this.horariosDelTaller = [];
       this.horarioAEditar = null;
@@ -308,53 +469,105 @@ export class Talleres implements OnInit {
       return;
     }
 
-    const taller = this.talleres.find((t) => t.id == Number(tallerId));
+    const taller = this.talleres.find(t => t.id == Number(tallerId));
     this.horariosDelTaller = taller ? taller.horarios : [];
     this.horarioAEditar = null;
     this.editFormHorarioVisible = false;
+
+    console.log('📊 [TALLERES ANGULAR] Horarios cargados:', this.horariosDelTaller.length);
   }
 
   onHorarioAEditarChange(horarioId: string) {
+    console.log('🔵 [TALLERES ANGULAR] Seleccionando horario para editar:', horarioId);
+
     if (!horarioId) {
       this.editFormHorarioVisible = false;
       this.horarioAEditar = null;
       return;
     }
 
-    const horario = this.horariosDelTaller.find((h) => h.id == Number(horarioId));
+    const horario = this.horariosDelTaller.find(h => h.id == Number(horarioId));
     if (horario) {
       this.horarioAEditar = { ...horario };
       this.editFormHorarioVisible = true;
+      console.log('📝 [TALLERES ANGULAR] Horario cargado para edición:', this.horarioAEditar.id);
     }
   }
 
   guardarCambiosHorario() {
-    if (!this.horarioAEditar) return;
+    console.log('🔵 [TALLERES ANGULAR] Guardando cambios del horario:', this.horarioAEditar?.id);
 
-    const taller = this.talleres.find((t) => t.horarios.some((h) => h.id === this.horarioAEditar!.id));
-    if (taller) {
-      const index = taller.horarios.findIndex((h) => h.id === this.horarioAEditar!.id);
-      if (index !== -1) {
-        taller.horarios[index] = { ...this.horarioAEditar };
-        this.successMessage = 'Horario actualizado';
+    if (!this.horarioAEditar || !this.horarioAEditar.profesor) {
+      this.errorMessage = 'Debe seleccionar un profesor';
+      return;
+    }
+
+    const params = new HttpParams()
+      .set('profesorId', this.horarioAEditar.profesor.id.toString())
+      .set('diasDeClase', this.horarioAEditar.diasDeClase)
+      .set('horaInicio', this.horarioAEditar.horaInicio)
+      .set('horaFin', this.horarioAEditar.horaFin)
+      .set('fechaInicio', this.horarioAEditar.fechaInicio)
+      .set('vacantesDisponibles', this.horarioAEditar.vacantesDisponibles.toString());
+
+    console.log('📤 [TALLERES ANGULAR] Enviando actualización de horario:', params.toString());
+
+    this.adminService.updateHorario(this.horarioAEditar.id, params).subscribe({
+      next: (response: any) => {
+        console.log('✅ [TALLERES ANGULAR SUCCESS] Horario actualizado:', response);
+        this.successMessage = 'Horario actualizado exitosamente';
         this.horarioAEditar = null;
         this.editFormHorarioVisible = false;
+        this.cargarTalleres();
+
+        setTimeout(() => { this.successMessage = ''; }, 5000);
+      },
+      error: (err) => {
+        console.error('❌ [TALLERES ANGULAR ERROR] Error al actualizar horario:', err);
+        console.error('❌ [TALLERES ANGULAR ERROR] Detalles:', err.error);
+        this.errorMessage = err.error?.message || 'Error al actualizar el horario';
       }
-    }
+    });
   }
 
   // ===== ELIMINAR HORARIO =====
   eliminarHorario(horarioId: number) {
+    console.log('🔵 [TALLERES ANGULAR] Confirmando eliminación de horario:', horarioId);
+
     if (confirm(`¿Confirmas que deseas ELIMINAR permanentemente el horario con ID ${horarioId}?`)) {
-      for (const taller of this.talleres) {
-        const index = taller.horarios.findIndex((h) => h.id === horarioId);
-        if (index !== -1) {
-          taller.horarios.splice(index, 1);
+      console.log('📤 [TALLERES ANGULAR] Eliminando horario:', horarioId);
+
+      this.adminService.deleteHorario(horarioId).subscribe({
+        next: (response: any) => {
+          console.log('✅ [TALLERES ANGULAR SUCCESS] Horario eliminado:', response);
           this.successMessage = 'Horario eliminado exitosamente';
-          this.horariosDelTaller = this.horariosDelTaller.filter((h) => h.id !== horarioId);
-          break;
+          this.horariosDelTaller = this.horariosDelTaller.filter(h => h.id !== horarioId);
+          this.cargarTalleres();
+
+          setTimeout(() => { this.successMessage = ''; }, 5000);
+        },
+        error: (err) => {
+          console.error('❌ [TALLERES ANGULAR ERROR] Error al eliminar horario:', err);
+          this.errorMessage = err.error?.message || 'Error al eliminar el horario';
         }
-      }
+      });
+    } else {
+      console.log('⚠️ [TALLERES ANGULAR] Eliminación cancelada');
     }
+  }
+
+  /**
+   * ✅ Genera preview de imagen desde ruta string
+   */
+  getImagePreview(url: string): string {
+    if (!url) return '';
+
+    // Si ya es URL completa, devolverla tal cual
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+
+    // Si es ruta local, construir URL completa
+    return `http://localhost:8080${url}`;
   }
 }

@@ -1,12 +1,7 @@
-// profesores.ts
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; 
 import { Profesor, ProfesorService } from '../../../services/profesor-service';
-// ⬅️ Importar la interfaz y el servicio del paso anterior
-
-// Las interfaces originales se pueden simplificar o borrar si se usa la importación del servicio
 
 @Component({
   selector: 'app-profesores',
@@ -15,12 +10,10 @@ import { Profesor, ProfesorService } from '../../../services/profesor-service';
   templateUrl: './profesores.html',
   styleUrls: ['./profesores.scss']
 })
-
 export class Profesores implements OnInit {
 
   public profesores: Profesor[] = [];
 
-  // 🚨 CAMBIO: Inyectar el ProfesorService
   constructor(private profesorService: ProfesorService) { } 
 
   ngOnInit(): void {
@@ -30,17 +23,18 @@ export class Profesores implements OnInit {
   cargarProfesores(): void {
     this.profesorService.getProfesores().subscribe({
         next: (data) => {
-            // 🚨 MAPEO CLAVE: Construir la URL Absoluta
+            // ✅ CORREGIDO: El servicio ya maneja URLs externas correctamente
             this.profesores = data.map(profesor => ({
                 ...profesor,
-                // Reemplaza la URL relativa de la DB por la URL absoluta para el navegador
                 fotoUrl: this.profesorService.getStaticImageUrl(profesor.fotoUrl) 
             }));
-            console.log(`Profesores cargados con URLs absolutas: ${this.profesores.length}`);
+            console.log(`✅ Profesores cargados con URLs procesadas: ${this.profesores.length}`);
+            this.profesores.forEach(p => {
+                console.log(`📸 Profesor ${p.nombreCompleto}: ${p.fotoUrl}`);
+            });
         },
         error: (error) => {
-            console.error('Error al cargar la lista de profesores:', error);
-            // Manejo de error para que la vista muestre "Aún no hay profesores registrados"
+            console.error('❌ Error al cargar la lista de profesores:', error);
             this.profesores = []; 
         }
     });

@@ -63,7 +63,8 @@
                         @for (horario of taller.horarios; track horario.id) {
                         <option [ngValue]="horario.id">
                             {{ horario.diasDeClase }} de {{ horario.horaInicio }} a {{ horario.horaFin }}
-                            (Prof. {{ horario.profesor.nombreCompleto }} - Vacantes: {{ horario.vacantesDisponibles }})
+                            (Prof. {{ horario.profesor?.nombreCompleto || 'Por asignar' }} - Vacantes: {{
+                            horario.vacantesDisponibles }})
                         </option>
                         }
                     </select>

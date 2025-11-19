@@ -1,0 +1,29 @@
+.password-container {
+    background: white;
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.password-container .form-control {
+    padding: 10px 15px;
+    border-radius: 6px;
+}
+
+.btn-confirmar-password {
+    background-color: #007bff;
+    border-color: #007bff;
+    font-weight: bold;
+    padding: 10px 20px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-confirmar-password:hover:not(:disabled) {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+.btn-confirmar-password:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
