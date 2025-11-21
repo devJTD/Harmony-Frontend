@@ -49,6 +49,9 @@ export class Talleres implements OnInit {
   talleresActivos: Taller[] = [];
   profesores: Profesor[] = [];
 
+  diasSemana: string[] = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+  today: string = new Date().toISOString().split('T')[0];
+
   // ✅ Lista de imágenes disponibles en el servidor
   imagenesDisponibles: ImageInfo[] = [];
 
@@ -89,31 +92,26 @@ export class Talleres implements OnInit {
   // ✅ Control de carga de nueva imagen
   uploadingNewImage = false;
 
-  diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
-  today = new Date().toISOString().split('T')[0];
-
   constructor(private adminService: AdminService) { }
 
-  ngOnInit() {
-    console.log('🔵 [TALLERES ANGULAR] Inicializando componente Talleres');
-    this.cargarProfesores();
-    this.cargarTalleres();
+  ngOnInit(): void {
     this.cargarImagenesDisponibles();
+    this.cargarProfesores();
   }
 
   cargarProfesores() {
     console.log('🔵 [TALLERES ANGULAR] Cargando profesores...');
     this.adminService.getProfesores().subscribe({
-      next: (profesoresApi: any[]) => {
-        this.profesores = profesoresApi.map(p => ({
-          id: p.id,
-          nombreCompleto: p.nombreCompleto
-        }));
+      next: (data: any[]) => {
+        this.profesores = data;
         console.log('✅ [TALLERES ANGULAR] Profesores cargados:', this.profesores.length);
+        // Aseguramos que los talleres se carguen DESPUÉS de los profesores para mapear correctamente si es necesario
+        this.cargarTalleres();
       },
       error: (err) => {
         console.error('❌ [TALLERES ANGULAR] Error al cargar profesores:', err);
-        this.errorMessage = 'Error al cargar profesores';
+        // Intentamos cargar talleres de todos modos
+        this.cargarTalleres();
       }
     });
   }
@@ -121,35 +119,17 @@ export class Talleres implements OnInit {
   cargarTalleres() {
     console.log('🔵 [TALLERES ANGULAR] Cargando talleres...');
     this.adminService.getTalleres().subscribe({
-      next: (talleresApi: TallerDTO[]) => {
-        this.talleres = talleresApi.map(t => ({
-          id: t.id,
-          nombre: t.nombre,
-          descripcion: (t as any).descripcion || '',
-          duracionSemanas: (t as any).duracionSemanas || 0,
-          clasesPorSemana: (t as any).clasesPorSemana || 0,
-          precio: (t as any).precio || 0,
-          imagenTaller: (t as any).imagenTaller || '',
-          imagenInicio: (t as any).imagenInicio || '',
-          temas: (t as any).temas || '',
-          activo: (t as any).activo !== false,
-          horarios: (t as any).horarios || []
-        } as Taller));
-
+      next: (data: any[]) => {
+        this.talleres = data;
         this.talleresActivos = this.talleres.filter(t => t.activo);
         console.log('✅ [TALLERES ANGULAR] Talleres cargados:', this.talleres.length);
-        console.log('✅ [TALLERES ANGULAR] Talleres activos:', this.talleresActivos.length);
       },
       error: (err) => {
         console.error('❌ [TALLERES ANGULAR] Error al cargar talleres:', err);
-        this.errorMessage = 'Error al cargar talleres';
       }
     });
   }
 
-  /**
-   * ✅ NUEVO: Carga la lista de imágenes disponibles desde el backend
-   */
   cargarImagenesDisponibles() {
     console.log('🔵 [TALLERES ANGULAR] Cargando lista de imágenes disponibles...');
     this.adminService.getImagesList().subscribe({

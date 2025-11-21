@@ -2,11 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TallerService } from '../../../services/taller-service';
-// Importamos el servicio, pero definimos los tipos localmente para la corrección
-// (En una aplicación real, deberías corregir las interfaces en el archivo del servicio).
+import { ProfesorService } from '../../../services/profesor-service';
 
 // --- Definiciones de Interfaces (Simuladas/Corregidas) ---
-// La corrección clave es hacer que 'profesor' pueda ser nulo.
 export interface Profesor {
   id: number;
   nombreCompleto: string;
@@ -20,8 +18,8 @@ export interface Horario {
   horaFin: string;
   fechaInicio: string;
   vacantesDisponibles: number;
-  // LA CORRECCIÓN: profesor puede ser Profesor o null.
-  profesor: Profesor | null; 
+  profesor: Profesor | null;
+  profesorId?: number; // Added for the fix
 }
 
 export interface TallerDetallado {
@@ -38,44 +36,82 @@ export interface TallerDetallado {
 }
 // ---------------------------------------------------------
 
-
 @Component({
   selector: 'app-talleres',
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './talleres.html',
   styleUrls: ['./talleres.scss'],
-  providers: [CurrencyPipe, DatePipe, TallerService]
+  providers: [CurrencyPipe, DatePipe, TallerService, ProfesorService]
 })
 export class Talleres implements OnInit {
 
-  // Usamos la interfaz local TallerDetallado
-  public talleres: TallerDetallado[] = []; 
+  public talleres: TallerDetallado[] = [];
+  public profesores: Profesor[] = [];
 
   constructor(
     private currencyPipe: CurrencyPipe,
     private datePipe: DatePipe,
-    private tallerService: TallerService
+    private tallerService: TallerService,
+    private profesorService: ProfesorService
   ) { }
 
   ngOnInit(): void {
-    this.cargarTalleres(); 
+    // Primero cargamos profesores para poder mapearlos
+    this.cargarProfesores();
+  }
+
+  cargarProfesores(): void {
+    this.profesorService.getProfesores().subscribe({
+      next: (data: any[]) => {
+        this.profesores = data.map(p => ({
+          id: p.id,
+          nombreCompleto: p.nombreCompleto
+        }));
+        console.log('✅ Profesores cargados para referencia:', this.profesores.length);
+        this.cargarTalleres();
+      },
+      error: (err) => {
+        console.error('❌ Error al cargar profesores:', err);
+        this.cargarTalleres();
+      }
+    });
   }
 
   /**
    * Carga los talleres activos con sus detalles y horarios desde el REST Controller.
    */
   cargarTalleres(): void {
-    // Aquí usamos el TallerDetallado del servicio si es necesario, pero Angular usará
-    // la definición local para el componente. 
-    // Para simplificar, asumimos que la estructura coincide con la local.
     this.tallerService.getTalleresDetalladosActivos().subscribe({
-      next: (data: any) => { // Usamos 'any' temporalmente para no forzar la importación circular
-        this.talleres = data.map((taller: any) => ({
-          ...taller,
-          imagenTaller: this.tallerService.getStaticImageUrl(taller.imagenTaller) 
-        })) as TallerDetallado[]; // Casteamos al tipo corregido
-        
+      next: (data: any) => {
+        this.talleres = data.map((taller: any) => {
+
+          // Procesar horarios para asegurar que tengan profesor
+          const horariosProcesados = (taller.horariosAbiertos || []).map((h: any) => {
+            // Si no tiene objeto profesor, pero tiene profesorId, lo buscamos
+            if (!h.profesor && h.profesorId) {
+              const foundProf = this.profesores.find(p => p.id === h.profesorId);
+              if (foundProf) {
+                return { ...h, profesor: foundProf };
+              }
+            }
+            // Si 'profesor' viene como número (ID) en lugar de objeto
+            if (h.profesor && typeof h.profesor === 'number') {
+              const foundProf = this.profesores.find(p => p.id === h.profesor);
+              if (foundProf) {
+                return { ...h, profesor: foundProf };
+              }
+            }
+            return h;
+          });
+
+          return {
+            ...taller,
+            imagenTaller: this.tallerService.getStaticImageUrl(taller.imagenTaller),
+            horariosAbiertos: horariosProcesados
+          };
+        }) as TallerDetallado[];
+
         console.log('✅ Talleres cargados exitosamente:', this.talleres.length);
         this.talleres.forEach(t => {
           console.log(`📸 Taller ${t.nombre}: ${t.imagenTaller}`);
@@ -109,7 +145,7 @@ export class Talleres implements OnInit {
 
     const diffTime = inicio.getTime() - hoy.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    return Math.max(0, diffDays); 
+
+    return Math.max(0, diffDays);
   }
 }
