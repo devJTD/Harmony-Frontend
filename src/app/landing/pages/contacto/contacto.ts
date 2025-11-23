@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ContactoService } from '../../../services/contacto-service';
+import { AccordionComponent, AccordionItem } from '../../../shared/components/accordion/accordion';
 
 interface ContactoForm {
   nombre: string;
@@ -13,7 +14,7 @@ interface ContactoForm {
 @Component({
   selector: 'app-contacto',
   standalone: true,
-  imports: [CommonModule, FormsModule], 
+  imports: [CommonModule, FormsModule, AccordionComponent],
   templateUrl: './contacto.html',
   styleUrls: ['./contacto.scss']
 })
@@ -29,6 +30,29 @@ export class Contacto implements OnInit {
   public successMessage: string | null = null;
   public errorMessage: string | null = null;
   public isLoading: boolean = false;
+
+  public faqItems: AccordionItem[] = [
+    {
+      title: '¿Dónde queda exactamente la academia?',
+      content: 'La academia se encuentra en La Molina, Lima, Perú. Puedes ver la ubicación exacta en el mapa de esta página.'
+    },
+    {
+      title: '¿Hay estacionamiento?',
+      content: 'Sí, contamos con estacionamiento gratuito para estudiantes y visitantes.'
+    },
+    {
+      title: '¿Cómo me inscribo?',
+      content: 'Puedes inscribirte a través de nuestra página web en la sección "Inscripción". Solo necesitas llenar tus datos, seleccionar tus talleres y realizar el pago.'
+    },
+    {
+      title: '¿Cuáles son los métodos de pago?',
+      content: 'Aceptamos tarjetas de crédito, débito y transferencias bancarias. Todos los pagos son procesados de forma segura.'
+    },
+    {
+      title: '¿Puedo cancelar mi inscripción?',
+      content: 'Sí, puedes cancelar tu inscripción hasta 48 horas antes del inicio de clases. Contáctanos para más detalles sobre el proceso de reembolso.'
+    }
+  ];
 
   constructor(
     private contactoService: ContactoService
@@ -50,7 +74,7 @@ export class Contacto implements OnInit {
       asunto: formValue.asunto,
       mensajeLength: formValue.mensaje.length
     });
-    
+
     this.contactoService.enviar(formValue).subscribe({
       next: (response) => {
         console.log('[CONTACTO SUCCESS] Mensaje enviado correctamente', response);

@@ -1,0 +1,14 @@
+.accordion-button:not(.collapsed) {
+    color: #fff;
+    background-color: #d4a373; /* Using a color consistent with the theme (brownish/gold) */
+    box-shadow: inset 0 -1px 0 rgba(0,0,0,.125);
+}
+
+.accordion-button:focus {
+    border-color: #d4a373;
+    box-shadow: 0 0 0 0.25rem rgba(212, 163, 115, 0.25);
+}
+
+.accordion-button {
+    font-weight: 600;
+}

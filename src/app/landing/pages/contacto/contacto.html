@@ -2,7 +2,7 @@
     <h1 class="text-center mb-4">Contáctanos</h1>
     <p class="text-center text-muted mb-5">¡Estamos aquí para ayudarte! Completa el siguiente formulario o
         visítanos.</p>
-    <div class="row justify-content-center">
+    <div class="row justify-content-center mb-5">
         <div class="col-lg-8">
             <div class="card p-4 shadow-sm" style="background-color: #f8f1e9;">
 
@@ -56,6 +56,32 @@
                     </div>
                 </form>
             </div>
+        </div>
+    </div>
+
+    <!-- Ubicación y Mapa -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-10">
+            <h2 class="text-center mb-4">Nuestra Ubicación</h2>
+            <div class="card shadow-sm">
+                <div class="card-body p-0">
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.666076463938!2d-76.94406268518723!3d-12.06642799145437!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c6d041354003%3A0x8055627636606606!2sLa%20Molina%2C%20Peru!5e0!3m2!1sen!2spe!4v1635789000000!5m2!1sen!2spe"
+                        width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy">
+                    </iframe>
+                </div>
+                <div class="card-footer text-center">
+                    <p class="mb-0 fw-bold">La Molina, Lima, Perú</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preguntas Frecuentes -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h2 class="text-center mb-4">Preguntas Frecuentes</h2>
+            <app-accordion [items]="faqItems"></app-accordion>
         </div>
     </div>
 </div>
