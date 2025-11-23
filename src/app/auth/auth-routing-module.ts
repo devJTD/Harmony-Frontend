@@ -8,13 +8,14 @@ import { Login } from './pages/login/login'; // ⬅️ ¡Añadida la importació
 const routes: Routes = [
   {
     // Define la ruta base para el módulo Auth (ej: 'auth/')
-    path: '', 
+    path: '',
     component: Layout, // El Layout actúa como contenedor principal
     children: [
       {
         // Ruta para el Login (ej: 'auth/login')
         path: 'login',
-        component: Login
+        component: Login,
+        title: 'Harmony - Login'
       },
       {
         // Redirección por defecto si la URL del módulo es solo 'auth/'

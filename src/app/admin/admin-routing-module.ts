@@ -13,15 +13,18 @@ const routes: Routes = [
 
       {
         path: 'estudiantes',
-        component: Estudiantes
+        component: Estudiantes,
+        title: 'Harmony - Admin: Estudiantes'
       },
       {
         path: 'profesores',
-        component: Profesores
+        component: Profesores,
+        title: 'Harmony - Admin: Profesores'
       },
       {
         path: 'talleres',
-        component: Talleres
+        component: Talleres,
+        title: 'Harmony - Admin: Talleres'
       },
       {
         path: '**',

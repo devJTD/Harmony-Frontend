@@ -17,15 +17,18 @@ const routes: Routes = [
       },
       {
         path: 'horario',
-        component: Horario
+        component: Horario,
+        title: 'Harmony - Estudiante: Mi Horario'
       },
       {
         path: 'nueva-inscripcion',
-        component: NuevaInscripcionComponent
+        component: NuevaInscripcionComponent,
+        title: 'Harmony - Estudiante: Nueva Inscripción'
       },
       {
         path: 'contrasena',
-        component: Contrasena
+        component: Contrasena,
+        title: 'Harmony - Estudiante: Cambiar Contraseña'
       },
       {
         path: '**',

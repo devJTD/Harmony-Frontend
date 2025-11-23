@@ -21,23 +21,28 @@ const routes: Routes = [
     children: [
       {
         path: '',
-        component: Inicio
+        component: Inicio,
+        title: 'Harmony - Inicio'
       },
       {
         path: 'acerca',
-        component: Acerca
+        component: Acerca,
+        title: 'Harmony - Acerca de'
       },
       {
         path: 'contacto',
-        component: Contacto
+        component: Contacto,
+        title: 'Harmony - Contacto'
       },
       {
         path: 'blog',
-        component: Blog
+        component: Blog,
+        title: 'Harmony - Blog'
       },
       {
         path: 'confirmacion',
-        component: Confirmacion
+        component: Confirmacion,
+        title: 'Harmony - Confirmación'
       },
       {
         path: 'inscripcion',
@@ -70,11 +75,13 @@ const routes: Routes = [
       },
       {
         path: 'profesores',
-        component: Profesores
+        component: Profesores,
+        title: 'Harmony - Profesores'
       },
       {
         path: 'talleres',
-        component: Talleres
+        component: Talleres,
+        title: 'Harmony - Talleres'
       }
     ]
   }

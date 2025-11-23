@@ -24,6 +24,7 @@ export const routes: Routes = [
     },
     {
         path: '**',
-        component: Error404
+        component: Error404,
+        title: 'Harmony - Error'
     },
 ];

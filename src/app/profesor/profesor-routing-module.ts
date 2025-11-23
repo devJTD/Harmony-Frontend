@@ -16,11 +16,13 @@ const routes: Routes = [
       },
       {
         path: 'horario',
-        component: Horario
+        component: Horario,
+        title: 'Harmony - Profesor: Mi Horario'
       },
       {
         path: 'contrasena',
-        component: Contrasena
+        component: Contrasena,
+        title: 'Harmony - Profesor: Cambiar Contraseña'
       },
       {
         path: '**',
