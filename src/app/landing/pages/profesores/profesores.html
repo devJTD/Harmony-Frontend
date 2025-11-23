@@ -1,29 +1,98 @@
 <main class="container my-5">
-    <h1 class="text-center mb-5">Conoce a nuestros Profesores</h1>
 
-    <div class="d-flex flex-wrap justify-content-around">
+    <!-- VISTA DE LISTA DE PROFESORES -->
+    <div *ngIf="!profesorSeleccionado">
+        <h1 class="text-center mb-5">Conoce a nuestros Profesores</h1>
 
-        <div class="flip-card-container" *ngFor="let profesor of profesores">
-            <div class="flip-card-inner">
-                <div class="flip-card-front">
-                    <div class="card border-profesor text-center">
-                        <img [src]="profesor.fotoUrl" class="card-img-top img-fluid"
-                            [alt]="'Foto de ' + profesor.nombreCompleto">
-                        <div class="card-body">
-                            <h5 class="card-title fw-bold">{{ profesor.nombreCompleto }}</h5>
+        <div class="d-flex flex-wrap justify-content-around">
+
+            <div class="flip-card-container" *ngFor="let profesor of profesores" (click)="verDetalleProfesor(profesor)">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card border-profesor text-center">
+                            <img [src]="profesor.fotoUrl" class="card-img-top img-fluid"
+                                [alt]="'Foto de ' + profesor.nombreCompleto">
+                            <div class="card-body">
+                                <h5 class="card-title fw-bold">{{ profesor.nombreCompleto }}</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p class="sobre-mi">
+                            {{ profesor.informacion }}
+                        </p>
+                        <button class="btn btn-light btn-sm mt-2">Ver Clases</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 text-center mt-5" *ngIf="profesores.length === 0">
+                <p class="lead text-muted">Aún no hay profesores registrados.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- VISTA DE DETALLE DEL PROFESOR -->
+    <div *ngIf="profesorSeleccionado" class="animate__animated animate__fadeIn">
+        <button class="btn btn-outline-secondary mb-4" (click)="cerrarDetalle()">
+            <i class="bi bi-arrow-left"></i> Volver a la lista
+        </button>
+
+        <div class="row">
+            <div class="col-md-4 text-center">
+                <img [src]="profesorSeleccionado.fotoUrl" class="img-fluid rounded shadow mb-3"
+                    [alt]="profesorSeleccionado.nombreCompleto" style="max-height: 400px; object-fit: cover;">
+                <h2 class="fw-bold">{{ profesorSeleccionado.nombreCompleto }}</h2>
+                <p class="text-muted">{{ profesorSeleccionado.telefono }}</p>
+            </div>
+            <div class="col-md-8">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h4 class="card-title">Sobre mí</h4>
+                        <p class="card-text">{{ profesorSeleccionado.informacion }}</p>
+                    </div>
+                </div>
+
+                <h3 class="mb-3">Mis Talleres y Horarios</h3>
+
+                <div *ngIf="talleresProfesor.length === 0" class="alert alert-info">
+                    Este profesor no tiene clases programadas actualmente.
+                </div>
+
+                <div *ngFor="let item of talleresProfesor" class="card mb-3 border-0 shadow-sm">
+                    <div class="card-header bg-white border-bottom-0">
+                        <h5 class="mb-0 text-primary fw-bold">{{ item.taller.nombre }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Días</th>
+                                        <th>Horario</th>
+                                        <th>Inicio</th>
+                                        <th>Vacantes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let horario of item.horarios">
+                                        <td>{{ horario.diasDeClase }}</td>
+                                        <td>{{ horario.horaInicio }} - {{ horario.horaFin }}</td>
+                                        <td>{{ horario.fechaInicio | date:'dd/MM/yyyy' }}</td>
+                                        <td>
+                                            <span class="badge"
+                                                [ngClass]="horario.vacantesDisponibles > 0 ? 'bg-success' : 'bg-danger'">
+                                                {{ horario.vacantesDisponibles }} vacantes
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
-                <div class="flip-card-back">
-                    <p class="sobre-mi">
-                        {{ profesor.informacion }}
-                    </p>
-                </div>
-            </div>
-        </div>
 
-        <div class="col-12 text-center mt-5" *ngIf="profesores.length === 0">
-            <p class="lead text-muted">Aún no hay profesores registrados.</p>
+            </div>
         </div>
     </div>
 
