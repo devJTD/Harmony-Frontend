@@ -205,4 +205,8 @@ export class InscripcionService {
     console.log('[LOG INSCRIPCION-SERVICE] GET /cliente/' + clienteId);
     return this.http.get<any[]>(`${API_BASE_URL}/cliente/${clienteId}`);
   }
+
+  obtenerAvisos(userId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${API_BASE_URL}/avisos/${userId}`);
+  }
 }

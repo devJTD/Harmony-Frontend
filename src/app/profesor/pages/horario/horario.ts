@@ -2,6 +2,8 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../services/auth-service';
 import { HttpClient } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
+import { ProfesorService } from '../../../services/profesor-service';
 
 interface HorarioModel {
   id: number;
@@ -19,19 +21,29 @@ interface HorarioModel {
 @Component({
   selector: 'app-horario',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './horario.html',
   styleUrl: './horario.scss',
 })
 
 export class Horario implements OnInit {
   private authService = inject(AuthService);
+  private profesorService = inject(ProfesorService);
   private http = inject(HttpClient);
 
   public userName: string = '';
   public horarios: HorarioModel[] = [];
   public isLoading: boolean = true;
   public errorMessage: string | null = null;
+
+  // Modal state
+  public showModal: boolean = false;
+  public selectedHorario: HorarioModel | null = null;
+  public cancelacionData = {
+    fecha: '',
+    motivo: '',
+    accion: ''
+  };
 
   // RUTA CORREGIDA: Apunta al endpoint del profesor
   private readonly API_URL = 'http://localhost:8080/api/profesor/horarios';
@@ -68,5 +80,34 @@ export class Horario implements OnInit {
   formatHora(hora: string): string {
     // Formato HH:mm:ss -> HH:mm
     return hora.substring(0, 5);
+  }
+
+  abrirModalCancelacion(horario: HorarioModel): void {
+    this.selectedHorario = horario;
+    this.showModal = true;
+    this.cancelacionData = { fecha: '', motivo: '', accion: '' };
+  }
+
+  cerrarModal(): void {
+    this.showModal = false;
+    this.selectedHorario = null;
+  }
+
+  confirmarCancelacion(): void {
+    if (!this.selectedHorario || !this.cancelacionData.fecha || !this.cancelacionData.motivo || !this.cancelacionData.accion) {
+      alert('Por favor completa todos los campos');
+      return;
+    }
+
+    this.profesorService.cancelarClase(this.selectedHorario.id, this.cancelacionData).subscribe({
+      next: () => {
+        alert('Clase cancelada correctamente. Se ha notificado al administrador.');
+        this.cerrarModal();
+      },
+      error: (err) => {
+        console.error('Error al cancelar clase:', err);
+        alert('Error al cancelar la clase.');
+      }
+    });
   }
 }

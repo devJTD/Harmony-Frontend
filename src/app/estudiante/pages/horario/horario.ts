@@ -18,6 +18,12 @@ interface HorarioModel {
     profesor: {
         nombreCompleto: string;
     };
+    cancelaciones?: {
+        id: number;
+        fecha: string;
+        motivo: string;
+        accion: string;
+    }[];
 }
 
 @Component({
@@ -36,6 +42,7 @@ export class Horario implements OnInit {
     public userName: string = '';
     public horariosActivos: HorarioModel[] = [];
     public horariosFinalizados: HorarioModel[] = [];
+    public avisos: any[] = [];
     public isLoading: boolean = true;
     public errorMessage: string | null = null;
 
@@ -47,10 +54,23 @@ export class Horario implements OnInit {
         const userInfo = this.authService.getUserInfo();
         if (userInfo) {
             this.userName = userInfo.nombreCompleto || userInfo.email;
+            // if (userInfo.id) {
+            //     this.cargarAvisos(userInfo.id);
+            // }
         }
 
         this.cargarHorarios();
     }
+
+    // private cargarAvisos(userId: number): void {
+    //     this.inscripcionService.obtenerAvisos(userId).subscribe({
+    //         next: (data) => {
+    //             this.avisos = data;
+    //             console.log('Avisos cargados:', this.avisos);
+    //         },
+    //         error: (err) => console.error('Error al cargar avisos', err)
+    //     });
+    // }
 
     private cargarHorarios(): void {
         console.log('[HORARIO ESTUDIANTE] Cargando horarios del estudiante');
@@ -60,6 +80,22 @@ export class Horario implements OnInit {
                 console.log('[HORARIO ESTUDIANTE] Horarios cargados:', horarios.length);
                 this.horariosActivos = horarios.filter(h => !h.finalizado);
                 this.horariosFinalizados = horarios.filter(h => h.finalizado);
+
+                // Procesar cancelaciones
+                this.avisos = [];
+                horarios.forEach(h => {
+                    if (h.cancelaciones && h.cancelaciones.length > 0) {
+                        h.cancelaciones.forEach(c => {
+                            this.avisos.push({
+                                tallerNombre: h.taller.nombre,
+                                fecha: c.fecha,
+                                motivo: c.motivo,
+                                accion: c.accion
+                            });
+                        });
+                    }
+                });
+
                 this.isLoading = false;
             },
             error: (error) => {

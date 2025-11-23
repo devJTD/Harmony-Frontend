@@ -7,6 +7,19 @@
             estás inscrito.
         </p>
 
+        <!-- Alerts Section -->
+        <div *ngIf="avisos.length > 0" class="mb-4">
+            <h3 class="h5 text-danger mb-3"><i class="bi bi-exclamation-triangle-fill me-2"></i>Avisos Importantes</h3>
+            <div class="alert alert-danger" role="alert" *ngFor="let aviso of avisos">
+                <h4 class="alert-heading h6"><i class="bi bi-calendar-x me-2"></i>Clase Cancelada: {{ aviso.tallerNombre
+                    }}</h4>
+                <p class="mb-1"><strong>Fecha:</strong> {{ aviso.fecha | date:'fullDate' }}</p>
+                <p class="mb-1"><strong>Motivo:</strong> {{ aviso.motivo }}</p>
+                <hr>
+                <p class="mb-0"><strong>Acción:</strong> {{ aviso.accion }}</p>
+            </div>
+        </div>
+
         <!-- Loading State -->
         <div *ngIf="isLoading" class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
