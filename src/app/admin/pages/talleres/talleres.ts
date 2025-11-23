@@ -92,6 +92,11 @@ export class Talleres implements OnInit {
   // ✅ Control de carga de nueva imagen
   uploadingNewImage = false;
 
+  // ✅ Control de días de clase
+  maxClasesPorSemana = 0;
+  maxClasesPorSemanaEdit = 0;
+  diasDeClaseEdit: string[] = [];
+
   constructor(private adminService: AdminService) { }
 
   ngOnInit(): void {
@@ -305,6 +310,26 @@ export class Talleres implements OnInit {
   }
 
   // ===== REGISTRAR NUEVO HORARIO =====
+
+  /**
+   * ✅ NUEVO: Se ejecuta al seleccionar un taller en el formulario de nuevo horario
+   */
+  onTallerSeleccionadoForHorario(tallerId: string) {
+    this.nuevoHorario.tallerId = tallerId;
+    this.nuevoHorario.diasDeClase = []; // Resetear días seleccionados
+
+    if (!tallerId) {
+      this.maxClasesPorSemana = 0;
+      return;
+    }
+
+    const taller = this.talleres.find(t => t.id == Number(tallerId));
+    if (taller) {
+      this.maxClasesPorSemana = taller.clasesPorSemana;
+      console.log(`🔵 [TALLERES ANGULAR] Taller seleccionado: ${taller.nombre}, Clases/Semana: ${this.maxClasesPorSemana}`);
+    }
+  }
+
   registrarHorario() {
     console.log('🔵 [TALLERES ANGULAR] Registrando nuevo horario para taller:', this.nuevoHorario.tallerId);
 
@@ -313,6 +338,12 @@ export class Talleres implements OnInit {
       !this.nuevoHorario.horaFin) {
       this.errorMessage = 'Por favor completa todos los campos del horario';
       console.warn('⚠️ [TALLERES ANGULAR] Datos de horario incompletos');
+      return;
+    }
+
+    // Validar cantidad de días seleccionados
+    if (this.nuevoHorario.diasDeClase.length !== this.maxClasesPorSemana) {
+      this.errorMessage = `Debes seleccionar exactamente ${this.maxClasesPorSemana} días de clase`;
       return;
     }
 
@@ -354,13 +385,17 @@ export class Talleres implements OnInit {
       fechaInicio: '',
       vacantesDisponibles: 0,
     };
+    this.maxClasesPorSemana = 0;
   }
 
   toggleDia(dia: string) {
     if (this.nuevoHorario.diasDeClase.includes(dia)) {
       this.nuevoHorario.diasDeClase = this.nuevoHorario.diasDeClase.filter(d => d !== dia);
     } else {
-      this.nuevoHorario.diasDeClase.push(dia);
+      // Verificar límite antes de agregar
+      if (this.nuevoHorario.diasDeClase.length < this.maxClasesPorSemana) {
+        this.nuevoHorario.diasDeClase.push(dia);
+      }
     }
     console.log('🔄 [TALLERES ANGULAR] Días seleccionados:', this.nuevoHorario.diasDeClase);
   }
@@ -446,11 +481,19 @@ export class Talleres implements OnInit {
       this.horariosDelTaller = [];
       this.horarioAEditar = null;
       this.editFormHorarioVisible = false;
+      this.maxClasesPorSemanaEdit = 0;
       return;
     }
 
     const taller = this.talleres.find(t => t.id == Number(tallerId));
-    this.horariosDelTaller = taller ? taller.horarios : [];
+    if (taller) {
+      this.horariosDelTaller = taller.horarios;
+      this.maxClasesPorSemanaEdit = taller.clasesPorSemana; // ✅ Guardar límite para edición
+    } else {
+      this.horariosDelTaller = [];
+      this.maxClasesPorSemanaEdit = 0;
+    }
+
     this.horarioAEditar = null;
     this.editFormHorarioVisible = false;
 
@@ -463,15 +506,39 @@ export class Talleres implements OnInit {
     if (!horarioId) {
       this.editFormHorarioVisible = false;
       this.horarioAEditar = null;
+      this.diasDeClaseEdit = [];
       return;
     }
 
     const horario = this.horariosDelTaller.find(h => h.id == Number(horarioId));
     if (horario) {
       this.horarioAEditar = { ...horario };
+
+      // ✅ Convertir string de días a array para los checkboxes
+      this.diasDeClaseEdit = this.horarioAEditar.diasDeClase
+        ? this.horarioAEditar.diasDeClase.split(',').map(d => d.trim())
+        : [];
+
       this.editFormHorarioVisible = true;
       console.log('📝 [TALLERES ANGULAR] Horario cargado para edición:', this.horarioAEditar.id);
+      console.log('📝 [TALLERES ANGULAR] Días actuales:', this.diasDeClaseEdit);
     }
+  }
+
+  toggleDiaEdit(dia: string) {
+    if (this.diasDeClaseEdit.includes(dia)) {
+      this.diasDeClaseEdit = this.diasDeClaseEdit.filter(d => d !== dia);
+    } else {
+      // Verificar límite antes de agregar
+      if (this.diasDeClaseEdit.length < this.maxClasesPorSemanaEdit) {
+        this.diasDeClaseEdit.push(dia);
+      }
+    }
+    console.log('🔄 [TALLERES ANGULAR] Días editados seleccionados:', this.diasDeClaseEdit);
+  }
+
+  isDiaSelectedEdit(dia: string): boolean {
+    return this.diasDeClaseEdit.includes(dia);
   }
 
   guardarCambiosHorario() {
@@ -481,6 +548,15 @@ export class Talleres implements OnInit {
       this.errorMessage = 'Debe seleccionar un profesor';
       return;
     }
+
+    // Validar cantidad de días seleccionados
+    if (this.diasDeClaseEdit.length !== this.maxClasesPorSemanaEdit) {
+      this.errorMessage = `Debes seleccionar exactamente ${this.maxClasesPorSemanaEdit} días de clase`;
+      return;
+    }
+
+    // ✅ Actualizar el string de días de clase
+    this.horarioAEditar.diasDeClase = this.diasDeClaseEdit.join(', ');
 
     const params = new HttpParams()
       .set('profesorId', this.horarioAEditar.profesor.id.toString())
