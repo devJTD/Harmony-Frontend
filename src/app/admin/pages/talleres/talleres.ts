@@ -542,6 +542,31 @@ export class Talleres implements OnInit {
     return this.diasDeClaseEdit.includes(dia);
   }
 
+  /**
+   * ✅ NUEVO: Actualiza la fecha de fin automáticamente al cambiar la fecha de inicio
+   */
+  actualizarFechaFin() {
+    if (!this.horarioAEditar || !this.horarioAEditar.fechaInicio || !this.tallerParaHorarioEditar) return;
+
+    const taller = this.talleres.find(t => t.id == Number(this.tallerParaHorarioEditar));
+    if (!taller) return;
+
+    // Truco para evitar desfases por zona horaria al usar input date:
+    const parts = this.horarioAEditar.fechaInicio.split('-');
+    const dateObj = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+
+    const diasDuracion = taller.duracionSemanas * 7;
+    dateObj.setDate(dateObj.getDate() + diasDuracion);
+
+    // Formatear a YYYY-MM-DD
+    const year = dateObj.getFullYear();
+    const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+    const day = dateObj.getDate().toString().padStart(2, '0');
+
+    this.horarioAEditar.fechaFin = `${year}-${month}-${day}`;
+    console.log('🔄 [TALLERES ANGULAR] Fecha fin recalculada:', this.horarioAEditar.fechaFin);
+  }
+
   guardarCambiosHorario() {
     console.log('🔵 [TALLERES ANGULAR] Guardando cambios del horario:', this.horarioAEditar?.id);
 
@@ -565,7 +590,8 @@ export class Talleres implements OnInit {
       .set('horaInicio', this.horarioAEditar.horaInicio)
       .set('horaFin', this.horarioAEditar.horaFin)
       .set('fechaInicio', this.horarioAEditar.fechaInicio)
-      .set('vacantesDisponibles', this.horarioAEditar.vacantesDisponibles.toString());
+      .set('vacantesDisponibles', this.horarioAEditar.vacantesDisponibles.toString())
+      .set('fechaFin', this.horarioAEditar.fechaFin || '');
 
     console.log('📤 [TALLERES ANGULAR] Enviando actualización de horario:', params.toString());
 

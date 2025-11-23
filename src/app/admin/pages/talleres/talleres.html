@@ -2,16 +2,15 @@
     <h1 class="mb-4 text-harmony-title">Gestión de Talleres y Horarios</h1>
     <hr />
 
-    <!-- Alertas -->
+    <!-- MENSAJES DE ÉXITO Y ERROR -->
     <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i>
-        <strong>¡Éxito!</strong> {{ successMessage }}
-        <button type="button" class="btn-close" aria-label="Cerrar" (click)="successMessage = ''"></button>
+        <i class="bi bi-check-circle-fill me-2"></i> {{ successMessage }}
+        <button type="button" class="btn-close" (click)="successMessage = ''" aria-label="Close"></button>
     </div>
+
     <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-        <strong>Error:</strong> {{ errorMessage }}
-        <button type="button" class="btn-close" aria-label="Cerrar" (click)="errorMessage = ''"></button>
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ errorMessage }}
+        <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
     </div>
 
     <!-- ✅ SECCIÓN DE CARGA DE IMÁGENES -->
@@ -35,151 +34,141 @@
     </section>
 
     <!-- SECCIÓN 1: REGISTRAR NUEVO TALLER -->
-    <section id="anadir-taller" class="mb-5 p-4 border rounded shadow-sm bg-light-purple">
-        <h3 class="text-harmony-title mb-4"><i class="bi bi-plus-circle me-2"></i> Añadir Nuevo Taller</h3>
-
-        <form #tallerForm="ngForm" (ngSubmit)="registrarTaller()">
+    <section id="nuevo-taller" class="mb-5 p-4 border rounded shadow-sm bg-white">
+        <h3 class="text-harmony-title mb-4"><i class="bi bi-plus-circle me-2"></i> Registrar Nuevo Taller</h3>
+        <form (ngSubmit)="registrarTaller()" #tallerForm="ngForm">
             <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label for="nombreTaller" class="form-label">Nombre del Taller *</label>
-                        <input type="text" class="form-control" id="nombreTaller" [(ngModel)]="nuevoTaller.nombre"
-                            name="nombre" placeholder="Ej: Guitarra Clásica" required />
-                    </div>
-                    <div class="mb-3">
-                        <label for="descripcionTaller" class="form-label">Descripción *</label>
-                        <textarea class="form-control" id="descripcionTaller" [(ngModel)]="nuevoTaller.descripcion"
-                            name="descripcion" rows="3" required></textarea>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="duracionSemanas" class="form-label">Duración (Semanas) *</label>
-                            <input type="number" class="form-control" id="duracionSemanas"
-                                [(ngModel)]="nuevoTaller.duracionSemanas" name="duracionSemanas" min="1" required />
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="clasesPorSemana" class="form-label">Clases por Semana *</label>
-                            <input type="number" class="form-control" id="clasesPorSemana"
-                                [(ngModel)]="nuevoTaller.clasesPorSemana" name="clasesPorSemana" min="1" required />
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="precioTaller" class="form-label">Precio Base (S/) *</label>
-                        <input type="number" class="form-control" id="precioTaller" [(ngModel)]="nuevoTaller.precio"
-                            name="precio" step="0.01" min="0" placeholder="Ej: 150.00" required />
-                    </div>
-                    <div class="mb-3">
-                        <label for="temasCrear" class="form-label">Temas del Taller</label>
-                        <textarea class="form-control" id="temasCrear" [(ngModel)]="nuevoTaller.temas" name="temas"
-                            rows="4" placeholder="Ej: Posicion de las mano, Primeros acordes, ..."></textarea>
-                    </div>
+                <div class="col-md-6 mb-3">
+                    <label for="nombreTaller" class="form-label">Nombre del Taller *</label>
+                    <input type="text" class="form-control" id="nombreTaller" [(ngModel)]="nuevoTaller.nombre"
+                        name="nombre" required placeholder="Ej. Piano Básico" />
                 </div>
-
-                <div class="col-md-6">
-                    <h5 class="mb-3 text-secondary">Imágenes del Taller</h5>
-
-                    <!-- ✅ SELECTOR DE IMAGEN TALLER (Detalle) -->
-                    <div class="mb-3">
-                        <label for="imagenTallerSelect" class="form-label">Imagen Taller (Detalle) *</label>
-                        <select class="form-select" id="imagenTallerSelect" [(ngModel)]="nuevoTaller.imagenTaller"
-                            name="imagenTaller" required>
-                            <option value="">-- Seleccionar imagen --</option>
-                            <option *ngFor="let img of imagenesDisponibles" [value]="img.url">
-                                {{ img.filename }}
-                            </option>
-                        </select>
-                        <small class="form-text text-muted">
-                            <i class="bi bi-info-circle"></i> Sube primero la imagen en la sección superior
-                        </small>
-
-                        <!-- Preview de imagen -->
-                        <div *ngIf="nuevoTaller.imagenTaller" class="mt-2">
-                            <img [src]="getImagePreview(nuevoTaller.imagenTaller)" class="img-thumbnail"
-                                style="max-height: 150px;" alt="Preview">
-                        </div>
-                    </div>
-
-                    <!-- ✅ SELECTOR DE IMAGEN INICIO (Principal) -->
-                    <div class="mb-3">
-                        <label for="imagenInicioSelect" class="form-label">Imagen Inicio (Principal) *</label>
-                        <select class="form-select" id="imagenInicioSelect" [(ngModel)]="nuevoTaller.imagenInicio"
-                            name="imagenInicio" required>
-                            <option value="">-- Seleccionar imagen --</option>
-                            <option *ngFor="let img of imagenesDisponibles" [value]="img.url">
-                                {{ img.filename }}
-                            </option>
-                        </select>
-                        <small class="form-text text-muted">
-                            <i class="bi bi-info-circle"></i> Imagen destacada en la página de inicio
-                        </small>
-
-                        <!-- Preview de imagen -->
-                        <div *ngIf="nuevoTaller.imagenInicio" class="mt-2">
-                            <img [src]="getImagePreview(nuevoTaller.imagenInicio)" class="img-thumbnail"
-                                style="max-height: 150px;" alt="Preview">
-                        </div>
-                    </div>
-
-                    <!-- Botón para refrescar lista de imágenes -->
-                    <button type="button" class="btn btn-sm btn-outline-secondary"
-                        (click)="cargarImagenesDisponibles()">
-                        <i class="bi bi-arrow-clockwise me-1"></i> Actualizar lista de imágenes
-                    </button>
+                <div class="col-md-6 mb-3">
+                    <label for="descripcionTaller" class="form-label">Descripción *</label>
+                    <textarea class="form-control" id="descripcionTaller" [(ngModel)]="nuevoTaller.descripcion"
+                        name="descripcion" rows="1" required placeholder="Breve descripción..."></textarea>
                 </div>
             </div>
-            <div class="d-grid mt-4">
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="duracionSemanas" class="form-label">Duración (Semanas) *</label>
+                    <input type="number" class="form-control" id="duracionSemanas"
+                        [(ngModel)]="nuevoTaller.duracionSemanas" name="duracionSemanas" min="1" required />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="clasesPorSemana" class="form-label">Clases por Semana *</label>
+                    <input type="number" class="form-control" id="clasesPorSemana"
+                        [(ngModel)]="nuevoTaller.clasesPorSemana" name="clasesPorSemana" min="1" required />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="precioTaller" class="form-label">Precio Base (S/) *</label>
+                    <input type="number" class="form-control" id="precioTaller" [(ngModel)]="nuevoTaller.precio"
+                        name="precio" step="0.01" min="0" required />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="imagenTallerSelect" class="form-label">Imagen Taller (Detalle) *</label>
+                    <select class="form-select" id="imagenTallerSelect" [(ngModel)]="nuevoTaller.imagenTaller"
+                        name="imagenTaller" required>
+                        <option value="">-- Seleccionar imagen --</option>
+                        <option *ngFor="let img of imagenesDisponibles" [value]="img.url">
+                            {{ img.filename }}
+                        </option>
+                    </select>
+                    <div *ngIf="nuevoTaller.imagenTaller" class="mt-2">
+                        <img [src]="getImagePreview(nuevoTaller.imagenTaller)" class="img-thumbnail"
+                            style="max-height: 120px;" alt="Preview">
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="imagenInicioSelect" class="form-label">Imagen Inicio (Principal) *</label>
+                    <select class="form-select" id="imagenInicioSelect" [(ngModel)]="nuevoTaller.imagenInicio"
+                        name="imagenInicio" required>
+                        <option value="">-- Seleccionar imagen --</option>
+                        <option *ngFor="let img of imagenesDisponibles" [value]="img.url">
+                            {{ img.filename }}
+                        </option>
+                    </select>
+                    <div *ngIf="nuevoTaller.imagenInicio" class="mt-2">
+                        <img [src]="getImagePreview(nuevoTaller.imagenInicio)" class="img-thumbnail"
+                            style="max-height: 120px;" alt="Preview">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBIDA DE IMAGEN -->
+            <div class="mb-3 p-3 bg-light border rounded">
+                <label class="form-label fw-bold text-secondary">¿No encuentras la imagen?</label>
+                <div class="d-flex align-items-center gap-3">
+                    <button type="button" class="btn btn-outline-primary btn-sm" (click)="triggerFileUpload()"
+                        [disabled]="uploadingNewImage">
+                        <i class="bi bi-cloud-upload me-1"></i> Subir Nueva Imagen
+                    </button>
+                    <span *ngIf="uploadingNewImage" class="text-muted small">
+                        <span class="spinner-border spinner-border-sm me-1"></span> Subiendo...
+                    </span>
+                    <input type="file" id="uploadImageFile" class="d-none" (change)="onUploadNewImage($event)"
+                        accept="image/*">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="temasTaller" class="form-label">Temas (Opcional)</label>
+                <textarea class="form-control" id="temasTaller" [(ngModel)]="nuevoTaller.temas" name="temas"
+                    rows="2"></textarea>
+            </div>
+
+            <div class="d-grid">
                 <button type="submit" class="btn btn-primary btn-lg" [disabled]="tallerForm.invalid">
-                    <i class="bi bi-plus-circle me-2"></i> Registrar Nuevo Taller
+                    <i class="bi bi-save me-2"></i> Registrar Taller
                 </button>
             </div>
         </form>
     </section>
 
-    <!-- SECCIÓN 2: REGISTRAR NUEVO HORARIO -->
-    <section id="anadir-horario" class="mb-5 p-4 border rounded shadow-sm bg-light-warning">
-        <h3 class="text-harmony-title mb-4"><i class="bi bi-calendar-plus me-2"></i> Añadir Nuevo Horario a un Taller
-        </h3>
-
-        <form #horarioForm="ngForm" (ngSubmit)="registrarHorario()">
+    <!-- SECCIÓN 2: AÑADIR HORARIO A TALLER -->
+    <section id="nuevo-horario" class="mb-5 p-4 border rounded shadow-sm bg-light-warning">
+        <h3 class="text-harmony-title mb-4"><i class="bi bi-calendar-plus me-2"></i> Añadir Horario a Taller</h3>
+        <form (ngSubmit)="registrarHorario()" #horarioForm="ngForm">
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label for="tallerIdHorario" class="form-label">Seleccionar Taller *</label>
-                    <select class="form-select" id="tallerIdHorario" [(ngModel)]="nuevoHorario.tallerId" name="tallerId"
+                    <label for="tallerSelect" class="form-label">Seleccionar Taller *</label>
+                    <select class="form-select" id="tallerSelect" [(ngModel)]="nuevoHorario.tallerId" name="tallerId"
                         (ngModelChange)="onTallerSeleccionadoForHorario($event)" required>
-                        <option value="">-- Seleccione un Taller --</option>
-                        <option *ngFor="let taller of talleres" [value]="taller.id">{{ taller.nombre }}</option>
+                        <option value="">-- Seleccione --</option>
+                        <option *ngFor="let taller of talleresActivos" [value]="taller.id">{{ taller.nombre }}</option>
                     </select>
                 </div>
-
                 <div class="col-md-6 mb-3">
-                    <label for="profesorIdHorario" class="form-label">Profesor Asignado *</label>
-                    <select class="form-select" id="profesorIdHorario" [(ngModel)]="nuevoHorario.profesorId"
+                    <label for="profesorSelect" class="form-label">Profesor *</label>
+                    <select class="form-select" id="profesorSelect" [(ngModel)]="nuevoHorario.profesorId"
                         name="profesorId" required>
-                        <option value="">-- Seleccionar Profesor --</option>
-                        <option *ngFor="let profesor of profesores" [value]="profesor.id">{{ profesor.nombreCompleto }}
-                        </option>
+                        <option value="">-- Seleccione --</option>
+                        <option *ngFor="let prof of profesores" [value]="prof.id">{{ prof.nombreCompleto }}</option>
                     </select>
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-12 mb-3">
-                    <label class="form-label d-block">
-                        Días de Clase *
-                        <span *ngIf="maxClasesPorSemana > 0" class="badge bg-info text-dark">
-                            Selecciona {{ maxClasesPorSemana }} días
-                        </span>
-                    </label>
-                    <div class="form-check form-check-inline" *ngFor="let dia of diasSemana">
-                        <input class="form-check-input" type="checkbox" [id]="'dia_' + dia"
-                            [checked]="isDiaSelected(dia)" (change)="toggleDia(dia)"
-                            [disabled]="!isDiaSelected(dia) && nuevoHorario.diasDeClase.length >= maxClasesPorSemana" />
-                        <label class="form-check-label" [for]="'dia_' + dia">{{ dia }}</label>
-                    </div>
-                    <div *ngIf="nuevoHorario.diasDeClase.length !== maxClasesPorSemana && maxClasesPorSemana > 0"
-                        class="text-danger small mt-1">
-                        Debes seleccionar exactamente {{ maxClasesPorSemana }} días.
-                    </div>
+            <div class="mb-3" *ngIf="nuevoHorario.tallerId">
+                <label class="form-label d-block">
+                    Día(s) de la Semana *
+                    <span *ngIf="maxClasesPorSemana > 0" class="badge bg-info text-dark">
+                        Selecciona {{ maxClasesPorSemana }} días
+                    </span>
+                </label>
+                <div class="form-check form-check-inline" *ngFor="let dia of diasSemana">
+                    <input class="form-check-input" type="checkbox" [id]="'dia_' + dia" [checked]="isDiaSelected(dia)"
+                        (change)="toggleDia(dia)"
+                        [disabled]="!isDiaSelected(dia) && nuevoHorario.diasDeClase.length >= maxClasesPorSemana" />
+                    <label class="form-check-label" [for]="'dia_' + dia">{{ dia }}</label>
+                </div>
+                <div *ngIf="nuevoHorario.diasDeClase.length !== maxClasesPorSemana && maxClasesPorSemana > 0"
+                    class="text-danger small mt-1">
+                    Debes seleccionar exactamente {{ maxClasesPorSemana }} días.
                 </div>
             </div>
 
@@ -390,20 +379,29 @@
             </div>
 
             <div class="row">
-                <div class="col-md-4 mb-3">
+                <div class="col-md-6 mb-3">
                     <label for="edit-hora-inicio-seccion" class="form-label">Hora de Inicio (HH:MM)</label>
                     <input type="time" class="form-control" id="edit-hora-inicio-seccion"
                         [(ngModel)]="horarioAEditar.horaInicio" name="horaInicio" required />
                 </div>
-                <div class="col-md-4 mb-3">
+                <div class="col-md-6 mb-3">
                     <label for="edit-hora-fin-seccion" class="form-label">Hora de Fin (HH:MM)</label>
                     <input type="time" class="form-control" id="edit-hora-fin-seccion"
                         [(ngModel)]="horarioAEditar.horaFin" name="horaFin" required />
                 </div>
-                <div class="col-md-4 mb-3">
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
                     <label for="edit-fecha-inicio-seccion" class="form-label">Fecha de Inicio</label>
                     <input type="date" class="form-control" id="edit-fecha-inicio-seccion"
-                        [(ngModel)]="horarioAEditar.fechaInicio" name="fechaInicio" required />
+                        [(ngModel)]="horarioAEditar.fechaInicio" name="fechaInicio" (change)="actualizarFechaFin()"
+                        required />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="edit-fecha-fin-seccion" class="form-label">Fecha de Fin (Calculada)</label>
+                    <input type="date" class="form-control bg-light" id="edit-fecha-fin-seccion"
+                        [(ngModel)]="horarioAEditar.fechaFin" name="fechaFin" readonly />
                 </div>
             </div>
 
