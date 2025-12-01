@@ -1,5 +1,8 @@
 import { Routes } from '@angular/router';
 import { Error404 } from './shared/pages/error404/error404';
+import { adminGuard } from './guards/admin.guard';
+import { profesorGuard } from './guards/profesor.guard';
+import { estudianteGuard } from './guards/estudiante.guard';
 
 export const routes: Routes = [
     {
@@ -12,14 +15,17 @@ export const routes: Routes = [
     },
     {
         path: 'admin',
+        canActivate: [adminGuard],
         loadChildren: () => import('./admin/admin-module').then(m => m.AdminModule)
     },
     {
         path: 'estudiante',
+        canActivate: [estudianteGuard],
         loadChildren: () => import('./estudiante/estudiante-module').then(m => m.EstudianteModule)
     },
     {
         path: 'profesor',
+        canActivate: [profesorGuard],
         loadChildren: () => import('./profesor/profesor-module').then(m => m.ProfesorModule)
     },
     {
