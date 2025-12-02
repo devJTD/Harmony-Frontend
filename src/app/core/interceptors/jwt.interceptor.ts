@@ -31,19 +31,16 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
 
   if (token && !isPublicUrl) {
     console.log('[JWT INTERCEPTOR] Agregando token a la petición:', req.url);
-    
+
     let headers = req.headers.set('Authorization', `Bearer ${token}`);
-    
-    // 🔧 CORRECCIÓN: Solo agregar Content-Type si NO es FormData
+
     // Spring rechaza charset en application/json, así que no lo especificamos
     if (req.body && !(req.body instanceof FormData)) {
-      // ✅ NO especificar charset - dejar que Spring maneje el por defecto
       if (!req.headers.has('Content-Type')) {
         headers = headers.set('Content-Type', 'application/json');
       }
     }
-    // ✅ Para FormData, NO establecer Content-Type - el navegador lo hace automáticamente
-    
+
     req = req.clone({ headers });
   }
 
@@ -54,7 +51,7 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
       if (error.status === 401 && !isPublicUrl) {
         console.error('[JWT INTERCEPTOR] Error 401 - Token inválido o expirado');
         console.error('[JWT INTERCEPTOR] Cerrando sesión y redirigiendo a login');
-        
+
         authService.logout();
         router.navigate(['/auth/login'], {
           queryParams: { returnUrl: router.url }
