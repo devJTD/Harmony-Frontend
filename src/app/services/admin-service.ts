@@ -83,13 +83,13 @@ export class AdminService {
 
   createTaller(payload: Partial<TallerDTO>): Observable<any> {
     console.log('🔵 [ADMIN SERVICE] POST /api/admin/talleres', payload);
-    // ✅ NO especificar Content-Type, dejar que Angular lo maneje automáticamente
+    // NO especificar Content-Type, dejar que Angular lo maneje automáticamente
     return this.http.post(`${API_ADMIN_BASE}/talleres`, payload);
   }
 
   updateTaller(id: number, payload: Partial<TallerDTO>): Observable<any> {
     console.log('🔵 [ADMIN SERVICE] PUT /api/admin/talleres/' + id, payload);
-    // ✅ NO especificar Content-Type, dejar que Angular lo maneje automáticamente
+    // NO especificar Content-Type, dejar que Angular lo maneje automáticamente
     return this.http.put(`${API_ADMIN_BASE}/talleres/${id}`, payload);
   }
   deleteTaller(id: number): Observable<any> {
@@ -140,7 +140,7 @@ export class AdminService {
   }
 
   /**
-   * ✅ NUEVO: Obtiene la lista de imágenes disponibles
+   * Obtiene la lista de imágenes disponibles
    */
   getImagesList(): Observable<any> {
     console.log('🔵 [ADMIN SERVICE] GET /api/upload/images-list');
